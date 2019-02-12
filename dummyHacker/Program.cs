@@ -24,7 +24,7 @@ namespace dummyHacker
 
         static void Main(string[] args)
         {
-            int processId = 9560;
+            int processId = 7520;
             bool inherit = false;
             IntPtr targetHandle = new IntPtr();
             Process targetProcess = new Process();
@@ -44,7 +44,16 @@ namespace dummyHacker
             Console.WriteLine(targetProcess.MainModule.BaseAddress.ToString("X8"));
             Console.WriteLine(targetProcess.MainModule.EntryPointAddress.ToString("X8"));
             Console.WriteLine(targetProcess.MainModule.ModuleMemorySize);
-            Console.WriteLine(BitConverter.ToInt32(buffer,0).ToString("X8"));
+            Console.WriteLine(BitConverter.ToInt32(buffer, 0).ToString("X8"));
+
+            int test = BitConverter.ToInt32(buffer, 0);
+            IntPtr testptr = new IntPtr(test);
+            for (int i = 0; i < 100; i++)
+            {
+                ReadProcessMemory(targetHandle, testptr + (4 * i), buffer, size, out arsch);
+                Console.WriteLine((testptr+4*i).ToString("X8") +  " = " + BitConverter.ToInt32(buffer, 0).ToString("X8") + " ||| as int :" + BitConverter.ToInt32(buffer, 0));
+            }
+
 
             //IntPtr egal = targetAddress + (int)12;
             //Console.WriteLine(targetAddress + " | " + egal);
@@ -57,12 +66,12 @@ namespace dummyHacker
             //    Console.WriteLine(BitConverter.ToInt32(buffer, 0).ToString("X8"));
             //}
 
-            int test =  BitConverter.ToInt32(buffer,0);
-            int* ptr = (int*)test;
-            IntPtr zeig = new IntPtr(ptr);
+            //int test =  BitConverter.ToInt32(buffer,0);
+            //int* ptr = (int*)test;
+            //IntPtr zeig = new IntPtr(ptr);
 
-            ReadProcessMemory(targetHandle, zeig, buffer, size, out arsch);
-            Console.WriteLine(BitConverter.ToInt32(buffer, 0).ToString("X8"));
+            //ReadProcessMemory(targetHandle, zeig, buffer, size, out arsch);
+            //Console.WriteLine(BitConverter.ToInt32(buffer, 0).ToString("X8"));
 
             //Console.WriteLine("{0}", *ptr);
 
