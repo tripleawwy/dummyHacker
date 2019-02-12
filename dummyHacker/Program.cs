@@ -24,13 +24,13 @@ namespace dummyHacker
 
         static void Main(string[] args)
         {
-            int processId = 4348;
+            int processId = 9560;
             bool inherit = false;
             IntPtr targetHandle = new IntPtr();
             Process targetProcess = new Process();
             targetProcess = Process.GetProcessById(processId);
 
-            IntPtr targetAddress = new IntPtr(0x0073F188);
+            IntPtr targetAddress = new IntPtr(0x00509B74);
             //int intRead = 0;
             //IntPtr buffer = new IntPtr(&intRead);
             int size = sizeof(int);
@@ -39,8 +39,36 @@ namespace dummyHacker
 
             targetHandle = OpenProcess(Flags.PROCESS_VM_READ, inherit, processId);
             ReadProcessMemory(targetHandle, targetAddress, buffer, size, out arsch);
+            //ReadProcessMemory(targetProcess.Handle, targetAddress, buffer, size, out arsch);
 
-            Console.WriteLine(BitConverter.ToInt32(buffer,0));
+            Console.WriteLine(targetProcess.MainModule.BaseAddress.ToString("X8"));
+            Console.WriteLine(targetProcess.MainModule.EntryPointAddress.ToString("X8"));
+            Console.WriteLine(targetProcess.MainModule.ModuleMemorySize);
+            Console.WriteLine(BitConverter.ToInt32(buffer,0).ToString("X8"));
+
+            //IntPtr egal = targetAddress + (int)12;
+            //Console.WriteLine(targetAddress + " | " + egal);
+            //Console.WriteLine(targetAddress.ToString("X8") + " | " + egal.ToString("X8"));
+
+            Console.WriteLine("\n**********************************************\n");
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    ReadProcessMemory(targetHandle, targetAddress + (4 * i), buffer, size, out arsch);
+            //    Console.WriteLine(BitConverter.ToInt32(buffer, 0).ToString("X8"));
+            //}
+
+            int test =  BitConverter.ToInt32(buffer,0);
+            int* ptr = (int*)test;
+            IntPtr zeig = new IntPtr(ptr);
+
+            ReadProcessMemory(targetHandle, zeig, buffer, size, out arsch);
+            Console.WriteLine(BitConverter.ToInt32(buffer, 0).ToString("X8"));
+
+            //Console.WriteLine("{0}", *ptr);
+
+            //IntPtr ptr2test = new IntPtr(&test);            
+            //ReadProcessMemory(targetHandle, targetAddress, buffer, size, out arsch);
+            //Console.WriteLine(BitConverter.ToInt32(buffer, 0));
             Console.ReadLine();
         }
     }
