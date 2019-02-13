@@ -13,6 +13,7 @@ namespace dummyHacker
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
 
+
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
 
@@ -24,7 +25,7 @@ namespace dummyHacker
 
         static void Main(string[] args)
         {
-            int processId = 7520;
+            int processId = 8560;
             bool inherit = false;
             IntPtr targetHandle = new IntPtr();
             Process targetProcess = new Process();
@@ -35,7 +36,7 @@ namespace dummyHacker
             //IntPtr buffer = new IntPtr(&intRead);
             int size = sizeof(int);
             byte[] buffer = new byte[size];
-            IntPtr arsch =  IntPtr.Zero;
+            IntPtr arsch = IntPtr.Zero;
 
             targetHandle = OpenProcess(Flags.PROCESS_VM_READ, inherit, processId);
             ReadProcessMemory(targetHandle, targetAddress, buffer, size, out arsch);
@@ -46,13 +47,25 @@ namespace dummyHacker
             Console.WriteLine(targetProcess.MainModule.ModuleMemorySize);
             Console.WriteLine(BitConverter.ToInt32(buffer, 0).ToString("X8"));
 
-            int test = BitConverter.ToInt32(buffer, 0);
-            IntPtr testptr = new IntPtr(test);
-            for (int i = 0; i < 100; i++)
-            {
-                ReadProcessMemory(targetHandle, testptr + (4 * i), buffer, size, out arsch);
-                Console.WriteLine((testptr+4*i).ToString("X8") +  " = " + BitConverter.ToInt32(buffer, 0).ToString("X8") + " ||| as int :" + BitConverter.ToInt32(buffer, 0));
-            }
+            //int test = BitConverter.ToInt32(buffer, 0);
+            //IntPtr testptr = new IntPtr(test);
+            IntPtr testptr = new IntPtr(0x00509B74);
+            //ShowIntValue(targetHandle, testptr, 7);
+            PointerToIntValue(targetHandle, targetProcess.MainModule.BaseAddress);
+
+            //int i = 0;
+            //while (ReadProcessMemory(targetHandle, testptr + (4 * i), buffer, size, out arsch) == true)
+            //{
+            //    Console.WriteLine((testptr + 4 * i).ToString("X8") + " = " + BitConverter.ToInt32(buffer, 0).ToString("X8") + " ||| as int :" + BitConverter.ToInt32(buffer, 0));
+
+            //    if (BitConverter.ToInt32(buffer, 0) == 19)
+            //    {
+            //        Console.WriteLine((testptr + 4 * i).ToString("X8") + " Offset : + " + (i * 4).ToString("X") + " = " + BitConverter.ToInt32(buffer, 0).ToString("X8") + " ||| as int :" + BitConverter.ToInt32(buffer, 0));
+            //    }
+            //    i++;
+            //}
+            //Console.WriteLine(i);
+
 
 
             //IntPtr egal = targetAddress + (int)12;
@@ -79,6 +92,78 @@ namespace dummyHacker
             //ReadProcessMemory(targetHandle, targetAddress, buffer, size, out arsch);
             //Console.WriteLine(BitConverter.ToInt32(buffer, 0));
             Console.ReadLine();
+        }
+        public static void ShowIntValue(IntPtr targetHandle, IntPtr targetAddress, int valueToFind)
+        {
+            int i = 0;
+            int size = sizeof(int);
+            byte[] buffer = new byte[size];
+            IntPtr notNecessary = IntPtr.Zero;
+
+            while (ReadProcessMemory(targetHandle, targetAddress + (4 * i), buffer, size, out notNecessary) == true)
+            {
+                if (BitConverter.ToInt32(buffer, 0) == valueToFind)
+                {
+                    Console.WriteLine((targetAddress + 4 * i).ToString("X8") + " Offset : + " + (i * 4).ToString("X") + " = " + BitConverter.ToInt32(buffer, 0).ToString("X8") + " ||| as int :" + BitConverter.ToInt32(buffer, 0));
+                }
+                i++;
+            }
+        }
+        public static bool IsCopy(IntPtr ptr, List<IntPtr[]> list)
+        {
+            foreach (IntPtr[] item in list)
+            {
+                if ((uint)ptr >= (uint)item[0] && (uint)ptr <= (uint)item[1])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static void PointerToIntValue(IntPtr targetHandle, IntPtr BaseAdress)
+        {
+            int i = 0;
+            int j = 0;
+            int total = 0;
+            int size = sizeof(int);
+            int ptrAsInt;
+            int preRead = 1024;
+            byte[] buffer = new byte[size];
+            byte[] buffer2 = new byte[size * preRead];
+            IntPtr notNecessary = IntPtr.Zero;
+            IntPtr subBaseAddress = new IntPtr();
+            IntPtr endOfSubBaseAddress = new IntPtr();
+            //IntPtr[][] habIchSchonGelesen = new IntPtr[][];
+            List<IntPtr[]> habIchSchonGelesen = new List<IntPtr[]>();
+
+
+            while (ReadProcessMemory(targetHandle, BaseAdress + (4 * i), buffer, size, out notNecessary))
+            {
+                subBaseAddress = (IntPtr)(ptrAsInt = BitConverter.ToInt32(buffer, 0));
+
+                if (!IsCopy(subBaseAddress, habIchSchonGelesen))
+                {
+                    while (subBaseAddress != IntPtr.Zero
+                                 && !IsCopy(subBaseAddress + (4 * j * preRead), habIchSchonGelesen)
+                                && ReadProcessMemory(targetHandle, subBaseAddress + (4 * j * preRead), buffer2, size * preRead, out notNecessary))
+                    {
+                        j++;
+                    }
+
+                    endOfSubBaseAddress = subBaseAddress + (4 * j * preRead);
+                    habIchSchonGelesen.Add(new IntPtr[] { subBaseAddress, endOfSubBaseAddress });
+                }
+
+                if (j > 0)
+                {
+                    total = total + j;
+                    Console.WriteLine(i.ToString("#,##0") + " || " + total.ToString("#,##0"));
+
+                    j = 0;
+                }
+                i++;
+            }
+            Console.WriteLine(i);
         }
     }
 }
