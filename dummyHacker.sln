@@ -4,6 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.28010.2041
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dummyHacker", "dummyHacker\dummyHacker.csproj", "{2633C458-2D41-4624-AF10-F3DFF1C3D71E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{998E1DA9-0B3A-47F8-8895-8D29302AA30A} = {998E1DA9-0B3A-47F8-8895-8D29302AA30A}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLLImports", "DLLImports\DLLImports.csproj", "{998E1DA9-0B3A-47F8-8895-8D29302AA30A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,10 @@ Global
 		{2633C458-2D41-4624-AF10-F3DFF1C3D71E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2633C458-2D41-4624-AF10-F3DFF1C3D71E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2633C458-2D41-4624-AF10-F3DFF1C3D71E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{998E1DA9-0B3A-47F8-8895-8D29302AA30A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{998E1DA9-0B3A-47F8-8895-8D29302AA30A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{998E1DA9-0B3A-47F8-8895-8D29302AA30A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{998E1DA9-0B3A-47F8-8895-8D29302AA30A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,27 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using static DLLImports.Kernel32DLL;
+using static DLLImports.Kernel32DLL.ProcessAccessFlags;
+using static DLLImports.Kernel32DLL.TypeEnum;
+using static DLLImports.Kernel32DLL.StateEnum;    
+
 
 namespace dummyHacker
 {
     unsafe class Program
     {
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
-
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
-
-        public struct Flags
-        {
-            public static uint PROCESS_VM_READ = 0x0010;
-            public static uint PROCESS_VM_WRITE = 0x0020;
-        }
-
+        
         static void Main(string[] args)
         {
-            int processId = 8560;
+            int processId = 9604;
             bool inherit = false;
             IntPtr targetHandle = new IntPtr();
             Process targetProcess = new Process();
@@ -34,11 +27,49 @@ namespace dummyHacker
             IntPtr targetAddress = new IntPtr(0x00509B74);
             //int intRead = 0;
             //IntPtr buffer = new IntPtr(&intRead);
-            int size = sizeof(int);
+            uint size = sizeof(int);
             byte[] buffer = new byte[size];
             IntPtr arsch = IntPtr.Zero;
 
-            targetHandle = OpenProcess(Flags.PROCESS_VM_READ, inherit, processId);
+            SystemInfo currentSystem = new SystemInfo();
+            GetSystemInfo(out currentSystem);
+
+            long maximum32BitAddress = 0x7fffffff;
+            IntPtr minimumAddress = currentSystem.MinimumApplicationAddress;
+            long helpminimumAddress = (long)minimumAddress;
+
+            int totalMemory = 0;
+            targetHandle = OpenProcess(QueryInformation | VirtualMemoryRead, inherit, processId);
+            int memsize = sizeof(MEMORY_BASIC_INFORMATION);
+            MEMORY_BASIC_INFORMATION memoryInfo = new MEMORY_BASIC_INFORMATION();
+
+            while (helpminimumAddress <= maximum32BitAddress)
+            {
+                VirtualQueryEx(targetHandle, minimumAddress, out memoryInfo, (uint)memsize);
+                if ((long)memoryInfo.RegionSize<0)
+                {
+                    break;
+                }
+                byte[] memoryBuffer = new byte[size];
+
+                if (ReadProcessMemory(targetHandle, memoryInfo.BaseAddress, buffer, size, out arsch)
+                    && memoryInfo.State == MEM_COMMIT
+                    && (memoryInfo.Type == MEM_MAPPED || memoryInfo.Type == MEM_PRIVATE))
+                {
+                    totalMemory = totalMemory + (int)memoryInfo.RegionSize;
+                }
+                helpminimumAddress = helpminimumAddress + (long)memoryInfo.RegionSize;
+                minimumAddress = new IntPtr(helpminimumAddress);
+
+            }
+            Console.WriteLine(totalMemory.ToString("#,##0"));
+
+
+
+
+
+
+
             ReadProcessMemory(targetHandle, targetAddress, buffer, size, out arsch);
             //ReadProcessMemory(targetProcess.Handle, targetAddress, buffer, size, out arsch);
 
@@ -51,7 +82,10 @@ namespace dummyHacker
             //IntPtr testptr = new IntPtr(test);
             IntPtr testptr = new IntPtr(0x00509B74);
             //ShowIntValue(targetHandle, testptr, 7);
-            PointerToIntValue(targetHandle, targetProcess.MainModule.BaseAddress);
+            //PointerToIntValue(targetHandle, targetProcess.MainModule.BaseAddress);
+
+
+
 
             //int i = 0;
             //while (ReadProcessMemory(targetHandle, testptr + (4 * i), buffer, size, out arsch) == true)
@@ -96,7 +130,7 @@ namespace dummyHacker
         public static void ShowIntValue(IntPtr targetHandle, IntPtr targetAddress, int valueToFind)
         {
             int i = 0;
-            int size = sizeof(int);
+            uint size = sizeof(int);
             byte[] buffer = new byte[size];
             IntPtr notNecessary = IntPtr.Zero;
 
@@ -125,11 +159,10 @@ namespace dummyHacker
             int i = 0;
             int j = 0;
             int total = 0;
-            int size = sizeof(int);
+            uint size = sizeof(int);
             int ptrAsInt;
             int preRead = 1024;
             byte[] buffer = new byte[size];
-            byte[] buffer2 = new byte[size * preRead];
             IntPtr notNecessary = IntPtr.Zero;
             IntPtr subBaseAddress = new IntPtr();
             IntPtr endOfSubBaseAddress = new IntPtr();
@@ -145,7 +178,7 @@ namespace dummyHacker
                 {
                     while (subBaseAddress != IntPtr.Zero
                                  && !IsCopy(subBaseAddress + (4 * j * preRead), habIchSchonGelesen)
-                                && ReadProcessMemory(targetHandle, subBaseAddress + (4 * j * preRead), buffer2, size * preRead, out notNecessary))
+                                && ReadProcessMemory(targetHandle, subBaseAddress + (4 * j), buffer, size, out notNecessary))
                     {
                         j++;
                     }
