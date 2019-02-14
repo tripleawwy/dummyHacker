@@ -8,17 +8,28 @@ using System.Diagnostics;
 using static DLLImports.Kernel32DLL;
 using static DLLImports.Kernel32DLL.ProcessAccessFlags;
 using static DLLImports.Kernel32DLL.TypeEnum;
-using static DLLImports.Kernel32DLL.StateEnum;    
+using static DLLImports.Kernel32DLL.StateEnum;
 
 
 namespace dummyHacker
 {
     unsafe class Program
     {
-        
+        public struct MyStruct
+        {
+            public IntPtr ptr;
+            public int value;
+
+            public MyStruct(IntPtr _ptr, int _value)
+            {
+                ptr = _ptr;value = _value;
+            }
+        }
+
         static void Main(string[] args)
         {
-            int processId = 9604;
+
+            int processId = 8732;
             bool inherit = false;
             IntPtr targetHandle = new IntPtr();
             Process targetProcess = new Process();
@@ -34,35 +45,73 @@ namespace dummyHacker
             SystemInfo currentSystem = new SystemInfo();
             GetSystemInfo(out currentSystem);
 
+
             long maximum32BitAddress = 0x7fffffff;
             IntPtr minimumAddress = currentSystem.MinimumApplicationAddress;
-            long helpminimumAddress = (long)minimumAddress;
+            long helpMinimumAddress = (long)minimumAddress;
 
-            int totalMemory = 0;
-            targetHandle = OpenProcess(QueryInformation | VirtualMemoryRead, inherit, processId);
+            uint totalMemory = 0;
+            targetHandle = OpenProcess(QueryInformation | VirtualMemoryRead | VirtualMemoryWrite, inherit, processId);
+
             int memsize = sizeof(MEMORY_BASIC_INFORMATION);
             MEMORY_BASIC_INFORMATION memoryInfo = new MEMORY_BASIC_INFORMATION();
+            byte[] memoryBuffer;
+            int j = 0;
 
-            while (helpminimumAddress <= maximum32BitAddress)
+            //spaß am rande
+            List<MyStruct> pointerToAnInt = new List<MyStruct>();
+            //pointerToAnInt.Add(new MyStruct(IntPtr.Zero, 42));
+            //Console.WriteLine(pointerToAnInt.ElementAt(0).wert == 42 ? "geht" : "geht nich");
+
+            uint[] bjoern = new uint[10000];
+            //List<uint> bjoern = new List<uint>();
+            //IntPtr[] bjoern = new IntPtr[???];
+
+            List<IntPtr[]> geleseneSpeicherBereiche = new List<IntPtr[]>();
+
+            while (helpMinimumAddress <= maximum32BitAddress)
             {
+                minimumAddress = new IntPtr(helpMinimumAddress);
+
                 VirtualQueryEx(targetHandle, minimumAddress, out memoryInfo, (uint)memsize);
-                if ((long)memoryInfo.RegionSize<0)
+                if ((long)memoryInfo.RegionSize < 0) //TODO: prüfen regionsize int oder uint  |  prüfen cast auf long oder int
                 {
                     break;
                 }
-                byte[] memoryBuffer = new byte[size];
+                memoryBuffer = new byte[memoryInfo.RegionSize];
 
-                if (ReadProcessMemory(targetHandle, memoryInfo.BaseAddress, buffer, size, out arsch)
-                    && memoryInfo.State == MEM_COMMIT
-                    && (memoryInfo.Type == MEM_MAPPED || memoryInfo.Type == MEM_PRIVATE))
+                if ((memoryInfo.State == MEM_COMMIT || memoryInfo.State == MEM_RESERVE)
+                    && (memoryInfo.Type == MEM_PRIVATE /*|| memoryInfo.Type == MEM_MAPPED || memoryInfo.Type == MEM_IMAGE*/)
+                    && ReadProcessMemory(targetHandle, memoryInfo.BaseAddress, memoryBuffer, memoryInfo.RegionSize, out arsch))
                 {
-                    totalMemory = totalMemory + (int)memoryInfo.RegionSize;
+                    geleseneSpeicherBereiche.Add(new IntPtr[] { memoryInfo.BaseAddress, (memoryInfo.BaseAddress + (int)memoryInfo.RegionSize) }); //regionsize wird eh noch int siehe todo
+                    
+
+                    for (int i = 0; i < memoryBuffer.Length - 3; i++)
+                    {
+
+                        if ((memoryBuffer[i + 3] << 8 | memoryBuffer[i + 2] << 8 | memoryBuffer[i + 1] << 8 | memoryBuffer[i]) == 20)
+                        {
+                            j++;
+                            //bjoern[j] = (uint)(memoryInfo.BaseAddress + i);
+                            //bjoern.Add((uint)(memoryInfo.BaseAddress + i));
+                            Console.Write((memoryInfo.BaseAddress + i).ToString("X8") + " = " + 20 + "\t");
+                        }
+                    }
+                    totalMemory = totalMemory + memoryInfo.RegionSize;
                 }
-                helpminimumAddress = helpminimumAddress + (long)memoryInfo.RegionSize;
-                minimumAddress = new IntPtr(helpminimumAddress);
+
+                helpMinimumAddress = helpMinimumAddress + memoryInfo.RegionSize;
+                //if (helpMinimumAddress >= int.MaxValue)
+                //{
+                //    break;
+                //}
+                //minimumAddress = new IntPtr(helpMinimumAddress);
 
             }
-            Console.WriteLine(totalMemory.ToString("#,##0"));
+         
+            Console.WriteLine("accessible data in memory : " + totalMemory.ToString("#,##0") + " Bytes");
+            Console.WriteLine(j+"\n**********************************************\n");
 
 
 
@@ -70,7 +119,7 @@ namespace dummyHacker
 
 
 
-            ReadProcessMemory(targetHandle, targetAddress, buffer, size, out arsch);
+            //ReadProcessMemory(targetHandle, targetAddress, buffer, size, out arsch);
             //ReadProcessMemory(targetProcess.Handle, targetAddress, buffer, size, out arsch);
 
             Console.WriteLine(targetProcess.MainModule.BaseAddress.ToString("X8"));

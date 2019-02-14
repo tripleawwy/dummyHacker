@@ -44,7 +44,7 @@ namespace DLLImports
             public IntPtr BaseAddress;
             public IntPtr AllocationBase;
             public AllocationProtectEnum AllocationProtect;
-            public IntPtr RegionSize;
+            public uint RegionSize;
             public StateEnum State;
             public AllocationProtectEnum Protect;
             public TypeEnum Type;
