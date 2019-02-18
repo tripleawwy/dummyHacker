@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace dummyHacker
 {
@@ -32,7 +33,7 @@ namespace dummyHacker
 
         private void firstScan(object sender, EventArgs e)
         {
-            firstTry.NewProcess(11836);
+            firstTry.NewProcess(20536);
             firstTry.ScanSystem();
             firstTry.CreateEntryPoints();
             firstTry.SearchForValues(size, textboxContent);
@@ -54,13 +55,13 @@ namespace dummyHacker
        
         private void nextScan_Click(object sender, EventArgs e)
         {
+            dataGridView1.Columns[2].Visible = true;
             firstTry.CompareLists(size, textboxContent);
             firstTry.CompareDataGridSource(textboxContent, basicValue);
             source.DataSource = firstTry.dataGridSource;
+            basicValue = textboxContent;
             //dataGridView1.DataSource = source;
-            dataGridView1.Columns[2].Visible = true;
             //listBox1.DataSource = firstTry.memoryMemory.ConvertAll(delegate (IntPtr i) { return i.ToString("X8"); });
-
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -100,6 +101,24 @@ namespace dummyHacker
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void Refresh_Click(object sender, EventArgs e)
+        {
+                firstTry.RefreshSource(basicValue);
+                source.DataSource = firstTry.dataGridSource;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            IntPtr test = new IntPtr(int.Parse(textBox2.Text, System.Globalization.NumberStyles.HexNumber));
+            int test2 = int.Parse(textBox3.Text);
+            firstTry.TestWrite(test, test2);
+        }
+
+        private void textBox2_Click(object sender, EventArgs e)
+        {
+            textBox2.SelectAll();
         }
     }
 }

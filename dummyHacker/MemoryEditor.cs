@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using static DLLImports.Kernel32DLL;
 using static DLLImports.Kernel32DLL.ProcessAccessFlags;
 using static DLLImports.Kernel32DLL.TypeEnum;
@@ -79,6 +80,34 @@ namespace dummyHacker
             {
                 MyStruct compare = new MyStruct(item.ToString("X8"), valueToFind, previousValue);
                 dataGridSource.Add(compare);
+            }
+        }
+
+        public void RefreshSource(int previousValue)
+        {
+                int currentValue;
+                uint size = 4;
+                dataGridSource = new List<MyStruct>();
+                foreach (IntPtr item in memoryMemory)
+                {
+                    byte[] refresh = new byte[size];
+                    ReadProcessMemory(targetHandle, item, refresh, size, out notNecessary);
+                    currentValue = BitConverter.ToInt32(refresh, 0);
+                    MyStruct compare = new MyStruct(item.ToString("X8"), currentValue, previousValue);
+                    dataGridSource.Add(compare);
+                }
+        }
+
+        public void RefreshList(int timerInMs, int previousValue)
+        {
+            int currentValue;
+            uint size = 4;
+            foreach (IntPtr item in memoryMemory)
+            {
+                byte[] refresh = new byte[size];
+                ReadProcessMemory(targetHandle, item, refresh, size, out notNecessary);
+                currentValue = BitConverter.ToInt32(refresh, 0);
+
             }
         }
 
@@ -258,7 +287,17 @@ namespace dummyHacker
             }
         }
 
+        public void TestWrite(IntPtr address, int wantedValue)
+        {
+            byte[] wantedBuffer = new byte[4];
+            wantedBuffer = BitConverter.GetBytes(wantedValue);
+            WriteProcessMemory(targetHandle, address, wantedBuffer, 4, out notNecessary);
+        }
 
+        public void Reset()
+        {
+
+        }
 
 
         public void ViewMemory()
