@@ -10,17 +10,25 @@ using static DLLImports.Kernel32DLL.StateEnum;
 
 namespace dummyHacker
 {
-    //public class MyStruct
-    //{
-    //    public MyStruct(IntPtr _ptr, byte[] _value)
-    //    {
-    //        Pointer = _ptr;
-    //        Value = _value;
-    //    }
+    public class MyStruct
+    {
+        public MyStruct(string _ptr, int _value)
+        {
+            Address = _ptr;
+            Value = _value;
+        }
+        public MyStruct(string _ptr, int _value, int _previousValue)
+        {
+            Address = _ptr;
+            Value = _value;
+            PreviousValue = _previousValue;
+        }
 
-    //    public IntPtr Pointer { get; set; }
-    //    public byte[] Value { get; set; }
-    //}
+        public string Address { get; set; }
+        public int Value { get; set; }
+        public int PreviousValue { get; set; }
+
+    }
 
     public class MemoryEditor
     {
@@ -31,8 +39,48 @@ namespace dummyHacker
         readonly long maximum32BitAddress = 0x7fffffff;
         private IntPtr minimumAddress;
         private Dictionary<IntPtr, int> regionBeginning;
-        private List<IntPtr> memoryMemory { get; set; }
+        private List<IntPtr> memoryMemory;
+        public List<MyStruct> dataGridSource;
 
+        public List <MyStruct> CreateDataGridSource(int valueToFind)
+        {
+            List<MyStruct> dataGridSource = new List<MyStruct>();
+            foreach (IntPtr address in memoryMemory)
+            {
+                MyStruct record = new MyStruct(address.ToString("X8"),valueToFind);
+                dataGridSource.Add(record);
+            }            
+            return dataGridSource;
+        }
+
+        public void CreateDataGridSource1(int valueToFind)
+        {
+            dataGridSource = new List<MyStruct>();
+            foreach (IntPtr address in memoryMemory)
+            {
+                MyStruct record = new MyStruct(address.ToString("X8"), valueToFind);
+                dataGridSource.Add(record);
+            }
+        }
+        public void CreateDataGridSource1(int valueToFind, int previousValue)
+        {
+            dataGridSource = new List<MyStruct>();
+            foreach (IntPtr address in memoryMemory)
+            {
+                MyStruct record = new MyStruct(address.ToString("X8"), valueToFind, previousValue);
+                dataGridSource.Add(record);
+            }
+        }
+
+        public void CompareDataGridSource(int valueToFind, int previousValue)
+        {
+            dataGridSource = new List<MyStruct>();
+            foreach (IntPtr item in memoryMemory)
+            {
+                MyStruct compare = new MyStruct(item.ToString("X8"), valueToFind, previousValue);
+                dataGridSource.Add(compare);
+            }
+        }
 
 
         public void NewProcess(int processId)
@@ -87,7 +135,7 @@ namespace dummyHacker
         }
         
 
-        public List <IntPtr> SearchForValues(int typeSize, int valueToFind)
+        public void SearchForValues(int typeSize, int valueToFind)
         {
                 memoryMemory = new List<IntPtr>();
 
@@ -144,7 +192,6 @@ namespace dummyHacker
                     }
                 }
             }
-            return memoryMemory;
         }
 
         public void ShowMatchingAddresses()
@@ -161,10 +208,10 @@ namespace dummyHacker
             Console.WriteLine(memoryMemory.Count);
         }
 
-        public void CompareLists()
+        public void CompareLists(int typeSize, int valueToFind)
         {
-            uint _typeSize = 4;
-            int _valueToFind = 19;
+            uint _typeSize = (uint)typeSize;
+            int _valueToFind = valueToFind;
             byte[] compareBuffer = new byte[_typeSize];
 
             for(int i = memoryMemory.Count-1; i >=0; i--)
@@ -211,15 +258,6 @@ namespace dummyHacker
             }
         }
 
-        public void ShowComparisonResults()
-        {
-            CompareLists();
-            for (int i = 0; i < memoryMemory.Count; i++)
-            {
-                Console.Write(memoryMemory.ElementAt(i).ToString("X8") + " ");
-            }
-            Console.WriteLine(memoryMemory.Count);
-        }
 
 
 
@@ -230,8 +268,6 @@ namespace dummyHacker
             AnalyzeRegions();
         }
 
-
-
-
+                     
     }
 }

@@ -23,17 +23,4 @@ namespace dummyHacker
             Application.Run(new Form1());            
         }
     }
-
-    //public class Program
-    //{
-    //    static void Main(string[] args)
-    //    {
-    //        MemoryEditor firstTry = new MemoryEditor();
-    //        firstTry.NewProcess(7600);
-    //        firstTry.ShowMatchingAddresses();
-    //        firstTry.ShowComparisonResults();
-    //        Console.ReadLine();
-    //    }      
-        
-    //}
 }
