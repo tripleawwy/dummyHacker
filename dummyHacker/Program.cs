@@ -5,27 +5,35 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using static DLLImports.Kernel32DLL;
-using static DLLImports.Kernel32DLL.ProcessAccessFlags;
-using static DLLImports.Kernel32DLL.TypeEnum;
-using static DLLImports.Kernel32DLL.StateEnum;
+using System.Windows.Forms;
 
 
 namespace dummyHacker
 {
-
-
-    public class Program
+    static class Program
     {
-        static void Main(string[] args)
+        /// <summary>
+        /// Der Haupteinstiegspunkt für die Anwendung.
+        /// </summary>
+        [STAThread]
+        static void Main()
         {
-            MemoryEditor firstTry = new MemoryEditor();
-            firstTry.NewProcess(3452);
-            firstTry.CreateEntryPoints();
-            
-
-            Console.ReadLine();
-        }      
-        
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1());            
+        }
     }
+
+    //public class Program
+    //{
+    //    static void Main(string[] args)
+    //    {
+    //        MemoryEditor firstTry = new MemoryEditor();
+    //        firstTry.NewProcess(7600);
+    //        firstTry.ShowMatchingAddresses();
+    //        firstTry.ShowComparisonResults();
+    //        Console.ReadLine();
+    //    }      
+        
+    //}
 }
