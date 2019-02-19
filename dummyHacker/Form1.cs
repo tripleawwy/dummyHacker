@@ -14,11 +14,12 @@ namespace dummyHacker
     public partial class Form1 : Form
     {
 
-        MemoryEditor firstTry = new MemoryEditor();
+        public MemoryEditor firstTry = new MemoryEditor();
         BindingSource source = new BindingSource();
         int size;
         int textboxContent;
         int basicValue;
+
 
         public Form1()
         {
@@ -33,7 +34,7 @@ namespace dummyHacker
 
         private void firstScan(object sender, EventArgs e)
         {
-            firstTry.NewProcess(20536);
+            firstTry.NewProcess(6280);
             firstTry.ScanSystem();
             firstTry.CreateEntryPoints();
             firstTry.SearchForValues(size, textboxContent);
@@ -60,6 +61,7 @@ namespace dummyHacker
             firstTry.CompareDataGridSource(textboxContent, basicValue);
             source.DataSource = firstTry.dataGridSource;
             basicValue = textboxContent;
+
             //dataGridView1.DataSource = source;
             //listBox1.DataSource = firstTry.memoryMemory.ConvertAll(delegate (IntPtr i) { return i.ToString("X8"); });
         }
@@ -94,31 +96,62 @@ namespace dummyHacker
             {
                 textBox1.Text = textBox1.Text.Remove(textBox1.Text.Length - 1);
                 textBox1.SelectionStart = textBox1.Text.Length;
-            }
-                     
-        }
-
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
+            }                     
         }
 
         private void Refresh_Click(object sender, EventArgs e)
         {
-                firstTry.RefreshSource(basicValue);
-                source.DataSource = firstTry.dataGridSource;
+            //firstTry.RefreshSource(basicValue);
+            //source.DataSource = firstTry.dataGridSource;
+            dataGridRefresher.RunWorkerAsync();
+            erneuern.Enabled = false;
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void schreiben_Click(object sender, EventArgs e)
         {
-            IntPtr test = new IntPtr(int.Parse(textBox2.Text, System.Globalization.NumberStyles.HexNumber));
-            int test2 = int.Parse(textBox3.Text);
-            firstTry.TestWrite(test, test2);
+            if (Freeze.Checked==true)
+            {
+                Freezer.RunWorkerAsync();
+            }
+            else
+            {
+                IntPtr test = new IntPtr(int.Parse(textBox2.Text, System.Globalization.NumberStyles.HexNumber));
+                int test2 = int.Parse(textBox3.Text);
+                firstTry.TestWrite(test, test2);
+            }
         }
 
         private void textBox2_Click(object sender, EventArgs e)
         {
             textBox2.SelectAll();
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            while (true)
+            {
+                firstTry.RefreshSource(basicValue);
+                dataGridView1.Invoke((Action)(() => source.DataSource = firstTry.dataGridSource));
+                Thread.Sleep(500);
+            }
+        }
+
+        private void textBox1_Click(object sender, EventArgs e)
+        {
+            textBox1.SelectAll();
+        }
+
+        private void Freezer_DoWork(object sender, DoWorkEventArgs e)
+        {
+            IntPtr test = new IntPtr(int.Parse(textBox2.Text, System.Globalization.NumberStyles.HexNumber));
+            int test2 = int.Parse(textBox3.Text);
+            while (Freeze.Checked == true)
+            {
+                schreiben.Invoke((Action)(() => schreiben.Enabled = false));
+                firstTry.TestWrite(test, test2);
+                Thread.Sleep(100);
+            }
+            schreiben.Invoke((Action)(() => schreiben.Enabled = true));
         }
     }
 }

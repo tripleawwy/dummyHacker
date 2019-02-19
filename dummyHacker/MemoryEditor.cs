@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using static DLLImports.Kernel32DLL;
 using static DLLImports.Kernel32DLL.ProcessAccessFlags;
-using static DLLImports.Kernel32DLL.TypeEnum;
 using static DLLImports.Kernel32DLL.StateEnum;
 
 namespace dummyHacker
@@ -39,7 +38,7 @@ namespace dummyHacker
         int _processId;
         readonly long maximum32BitAddress = 0x7fffffff;
         private IntPtr minimumAddress;
-        private Dictionary<IntPtr, int> regionBeginning;
+        public Dictionary<IntPtr, int> regionBeginning;
         private List<IntPtr> memoryMemory;
         public List<MyStruct> dataGridSource;
 
@@ -139,13 +138,16 @@ namespace dummyHacker
                 {
                     break;
                 }
-                if (memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE
-                    && memoryInfo.State == MEM_COMMIT)
+                if ( /* (memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE 
+                        || memoryInfo.Protect == AllocationProtectEnum.PAGE_EXECUTE_READWRITE) */
+                        
+                     memoryInfo.State == MEM_COMMIT)
                 {
                     regionBeginning.Add(memoryInfo.BaseAddress, (int)memoryInfo.RegionSize);
                 }
                 helpMinimumAddress = helpMinimumAddress + memoryInfo.RegionSize;
             }
+            int x = regionBeginning.Count;
         }
 
         public void AnalyzeRegions()
@@ -196,6 +198,10 @@ namespace dummyHacker
                         case 4:
                             for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
                             {
+                                if ((pair.Key+i) == new IntPtr(0x28ac610))
+                                {
+                                    int egal = 0;
+                                }
                                 if ((memoryBuffer[i + 3] << 8 | memoryBuffer[i + 2] << 8 | memoryBuffer[i + 1] << 8 | memoryBuffer[i]) == valueToFind)
                                 {
                                     memoryMemory.Add(pair.Key + i);

@@ -6,6 +6,7 @@ namespace DLLImports
     public static class Kernel32DLL
     {
         [DllImport("kernel32.dll", SetLastError = true)]
+        //public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, ref byte[] lpBuffer, uint dwSize, out IntPtr lpNumberOfBytesRead);
         public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, uint dwSize, out IntPtr lpNumberOfBytesRead);
 
         [DllImport("kernel32.dll", SetLastError = true)]
