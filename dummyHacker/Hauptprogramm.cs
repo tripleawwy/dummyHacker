@@ -160,7 +160,7 @@ namespace dummyHacker
 
         private void Open_Click(object sender, EventArgs e)
         {
-            Attach_Process attach_Process = new Attach_Process();
+            AttachProcess attach_Process = new AttachProcess();
             attach_Process.Show();            
         }
     }

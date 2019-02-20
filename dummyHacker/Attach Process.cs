@@ -11,9 +11,9 @@ using System.Windows.Forms;
 
 namespace dummyHacker
 {
-    public partial class Attach_Process : Form
+    public partial class AttachProcess : Form
     {
-        public Attach_Process()
+        public AttachProcess()
         {
             InitializeComponent();
             LoadProcesses();
@@ -26,15 +26,12 @@ namespace dummyHacker
 
         private void LoadProcesses()
         {
-            Dictionary<int, string> ProcessIdAndName = new Dictionary<int, string>();
-
             foreach (Process activeProcess in Process.GetProcesses())
             {
-                ProcessIdAndName.Add(activeProcess.Id, activeProcess.ProcessName);
+                ListViewItem item = new ListViewItem(activeProcess.ProcessName);
+                item.SubItems.Add(activeProcess.Id.ToString());
+                ProcessListView.Items.Add(item);
             }
-            ProcessListBox.DataSource = new BindingSource(ProcessIdAndName, null);
-            ProcessListBox.DisplayMember = "Value";
-            ProcessListBox.ValueMember = "Key";
         }
     }
 }

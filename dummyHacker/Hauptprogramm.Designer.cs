@@ -51,6 +51,7 @@
             // FirstScanButton
             // 
             this.FirstScanButton.Enabled = false;
+            this.FirstScanButton.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.FirstScanButton.Location = new System.Drawing.Point(616, 45);
             this.FirstScanButton.Name = "FirstScanButton";
             this.FirstScanButton.Size = new System.Drawing.Size(75, 23);
@@ -62,6 +63,7 @@
             // NextScanButton
             // 
             this.NextScanButton.Enabled = false;
+            this.NextScanButton.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.NextScanButton.Location = new System.Drawing.Point(697, 45);
             this.NextScanButton.Name = "NextScanButton";
             this.NextScanButton.Size = new System.Drawing.Size(75, 23);
@@ -74,6 +76,7 @@
             // 
             this.InputTypeComboBox.BackColor = System.Drawing.SystemColors.ControlLight;
             this.InputTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.InputTypeComboBox.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.InputTypeComboBox.FormattingEnabled = true;
             this.InputTypeComboBox.Items.AddRange(new object[] {
             "asd"});
@@ -85,9 +88,10 @@
             // 
             // ValueToFindTextBox
             // 
+            this.ValueToFindTextBox.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.ValueToFindTextBox.Location = new System.Drawing.Point(494, 47);
             this.ValueToFindTextBox.Name = "ValueToFindTextBox";
-            this.ValueToFindTextBox.Size = new System.Drawing.Size(100, 20);
+            this.ValueToFindTextBox.Size = new System.Drawing.Size(100, 21);
             this.ValueToFindTextBox.TabIndex = 7;
             this.ValueToFindTextBox.Click += new System.EventHandler(this.ValueToFindtextBox_Click);
             this.ValueToFindTextBox.TextChanged += new System.EventHandler(this.ValueToFindTextBox_TextChanged);
@@ -102,6 +106,7 @@
             // 
             // schreiben
             // 
+            this.schreiben.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.schreiben.Location = new System.Drawing.Point(697, 337);
             this.schreiben.Name = "schreiben";
             this.schreiben.Size = new System.Drawing.Size(75, 23);
@@ -112,22 +117,25 @@
             // 
             // WriteAddressTextBox
             // 
+            this.WriteAddressTextBox.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.WriteAddressTextBox.Location = new System.Drawing.Point(591, 339);
             this.WriteAddressTextBox.Name = "WriteAddressTextBox";
-            this.WriteAddressTextBox.Size = new System.Drawing.Size(100, 20);
+            this.WriteAddressTextBox.Size = new System.Drawing.Size(100, 21);
             this.WriteAddressTextBox.TabIndex = 12;
             this.WriteAddressTextBox.Click += new System.EventHandler(this.AddresstextBox_Click);
             // 
             // WriteValueTextBox
             // 
+            this.WriteValueTextBox.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.WriteValueTextBox.Location = new System.Drawing.Point(591, 366);
             this.WriteValueTextBox.Name = "WriteValueTextBox";
-            this.WriteValueTextBox.Size = new System.Drawing.Size(100, 20);
+            this.WriteValueTextBox.Size = new System.Drawing.Size(100, 21);
             this.WriteValueTextBox.TabIndex = 13;
             // 
             // WriteAddressLabel
             // 
             this.WriteAddressLabel.AutoSize = true;
+            this.WriteAddressLabel.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.WriteAddressLabel.Location = new System.Drawing.Point(522, 342);
             this.WriteAddressLabel.Name = "WriteAddressLabel";
             this.WriteAddressLabel.Size = new System.Drawing.Size(45, 13);
@@ -137,14 +145,16 @@
             // WriteValueLabel
             // 
             this.WriteValueLabel.AutoSize = true;
+            this.WriteValueLabel.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.WriteValueLabel.Location = new System.Drawing.Point(532, 369);
             this.WriteValueLabel.Name = "WriteValueLabel";
-            this.WriteValueLabel.Size = new System.Drawing.Size(34, 13);
+            this.WriteValueLabel.Size = new System.Drawing.Size(33, 13);
             this.WriteValueLabel.TabIndex = 15;
             this.WriteValueLabel.Text = "Value";
             // 
             // Open
             // 
+            this.Open.Font = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Open.Location = new System.Drawing.Point(12, 12);
             this.Open.Name = "Open";
             this.Open.Size = new System.Drawing.Size(75, 23);
@@ -160,9 +170,10 @@
             // Freeze
             // 
             this.Freeze.AutoSize = true;
+            this.Freeze.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.Freeze.Location = new System.Drawing.Point(697, 369);
             this.Freeze.Name = "Freeze";
-            this.Freeze.Size = new System.Drawing.Size(58, 17);
+            this.Freeze.Size = new System.Drawing.Size(57, 17);
             this.Freeze.TabIndex = 17;
             this.Freeze.Text = "Freeze";
             this.Freeze.UseVisualStyleBackColor = true;
@@ -175,6 +186,7 @@
             // ResetButton
             // 
             this.ResetButton.Enabled = false;
+            this.ResetButton.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.ResetButton.Location = new System.Drawing.Point(616, 75);
             this.ResetButton.Name = "ResetButton";
             this.ResetButton.Size = new System.Drawing.Size(75, 23);
@@ -186,9 +198,10 @@
             // AutoRefreshcheckBox
             // 
             this.AutoRefreshcheckBox.AutoSize = true;
+            this.AutoRefreshcheckBox.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.AutoRefreshcheckBox.Location = new System.Drawing.Point(12, 83);
             this.AutoRefreshcheckBox.Name = "AutoRefreshcheckBox";
-            this.AutoRefreshcheckBox.Size = new System.Drawing.Size(85, 17);
+            this.AutoRefreshcheckBox.Size = new System.Drawing.Size(84, 17);
             this.AutoRefreshcheckBox.TabIndex = 19;
             this.AutoRefreshcheckBox.Text = "AutoRefresh";
             this.AutoRefreshcheckBox.UseVisualStyleBackColor = true;
@@ -197,6 +210,7 @@
             // AddressFoundLabel
             // 
             this.AddressFoundLabel.AutoSize = true;
+            this.AddressFoundLabel.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.AddressFoundLabel.Location = new System.Drawing.Point(302, 83);
             this.AddressFoundLabel.Name = "AddressFoundLabel";
             this.AddressFoundLabel.Size = new System.Drawing.Size(73, 13);
@@ -225,6 +239,7 @@
             this.Controls.Add(this.NextScanButton);
             this.Controls.Add(this.FirstScanButton);
             this.Cursor = System.Windows.Forms.Cursors.Default;
+            this.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.Name = "Hauptprogramm";
             this.Text = "Hauptprogramm";
             this.Load += new System.EventHandler(this.HauptProgramm_Load);
