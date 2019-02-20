@@ -52,11 +52,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
+    <Compile Include="Attach Process.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Attach Process.Designer.cs">
+      <DependentUpon>Attach Process.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Hauptprogramm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Hauptprogramm.Designer.cs">
+      <DependentUpon>Hauptprogramm.cs</DependentUpon>
     </Compile>
     <Compile Include="MemoryConverter.cs" />
     <Compile Include="MemoryEditor.cs" />
@@ -67,8 +73,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="Attach Process.resx">
+      <DependentUpon>Attach Process.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Hauptprogramm.resx">
+      <DependentUpon>Hauptprogramm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

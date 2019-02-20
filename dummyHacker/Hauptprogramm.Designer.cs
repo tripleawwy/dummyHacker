@@ -1,6 +1,6 @@
 ﻿namespace dummyHacker
 {
-    partial class Form1
+    partial class Hauptprogramm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.ScanNumberOne = new System.Windows.Forms.Button();
-            this.FurtherScans = new System.Windows.Forms.Button();
+            this.FirstScanButton = new System.Windows.Forms.Button();
+            this.NextScanButton = new System.Windows.Forms.Button();
             this.InputTypeComboBox = new System.Windows.Forms.ComboBox();
             this.ValueToFindTextBox = new System.Windows.Forms.TextBox();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
@@ -48,27 +48,27 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
-            // ScanNumberOne
+            // FirstScanButton
             // 
-            this.ScanNumberOne.Enabled = false;
-            this.ScanNumberOne.Location = new System.Drawing.Point(616, 45);
-            this.ScanNumberOne.Name = "ScanNumberOne";
-            this.ScanNumberOne.Size = new System.Drawing.Size(75, 23);
-            this.ScanNumberOne.TabIndex = 1;
-            this.ScanNumberOne.Text = "First Scan";
-            this.ScanNumberOne.UseVisualStyleBackColor = true;
-            this.ScanNumberOne.Click += new System.EventHandler(this.FirstScan);
+            this.FirstScanButton.Enabled = false;
+            this.FirstScanButton.Location = new System.Drawing.Point(616, 45);
+            this.FirstScanButton.Name = "FirstScanButton";
+            this.FirstScanButton.Size = new System.Drawing.Size(75, 23);
+            this.FirstScanButton.TabIndex = 1;
+            this.FirstScanButton.Text = "First Scan";
+            this.FirstScanButton.UseVisualStyleBackColor = true;
+            this.FirstScanButton.Click += new System.EventHandler(this.FirstScan);
             // 
-            // FurtherScans
+            // NextScanButton
             // 
-            this.FurtherScans.Enabled = false;
-            this.FurtherScans.Location = new System.Drawing.Point(697, 45);
-            this.FurtherScans.Name = "FurtherScans";
-            this.FurtherScans.Size = new System.Drawing.Size(75, 23);
-            this.FurtherScans.TabIndex = 5;
-            this.FurtherScans.Text = "Next Scan";
-            this.FurtherScans.UseVisualStyleBackColor = true;
-            this.FurtherScans.Click += new System.EventHandler(this.NextScan);
+            this.NextScanButton.Enabled = false;
+            this.NextScanButton.Location = new System.Drawing.Point(697, 45);
+            this.NextScanButton.Name = "NextScanButton";
+            this.NextScanButton.Size = new System.Drawing.Size(75, 23);
+            this.NextScanButton.TabIndex = 5;
+            this.NextScanButton.Text = "Next Scan";
+            this.NextScanButton.UseVisualStyleBackColor = true;
+            this.NextScanButton.Click += new System.EventHandler(this.NextScan);
             // 
             // InputTypeComboBox
             // 
@@ -151,6 +151,7 @@
             this.Open.TabIndex = 16;
             this.Open.Text = "Open";
             this.Open.UseVisualStyleBackColor = true;
+            this.Open.Click += new System.EventHandler(this.Open_Click);
             // 
             // dataGridRefresher
             // 
@@ -203,7 +204,7 @@
             this.AddressFoundLabel.Text = "AddressCount";
             this.AddressFoundLabel.Visible = false;
             // 
-            // Form1
+            // Hauptprogramm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -221,12 +222,12 @@
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.ValueToFindTextBox);
             this.Controls.Add(this.InputTypeComboBox);
-            this.Controls.Add(this.FurtherScans);
-            this.Controls.Add(this.ScanNumberOne);
+            this.Controls.Add(this.NextScanButton);
+            this.Controls.Add(this.FirstScanButton);
             this.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Name = "Form1";
-            this.Text = "Form1";
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Name = "Hauptprogramm";
+            this.Text = "Hauptprogramm";
+            this.Load += new System.EventHandler(this.HauptProgramm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -234,8 +235,8 @@
         }
 
         #endregion
-        private System.Windows.Forms.Button ScanNumberOne;
-        private System.Windows.Forms.Button FurtherScans;
+        private System.Windows.Forms.Button FirstScanButton;
+        private System.Windows.Forms.Button NextScanButton;
         private System.Windows.Forms.ComboBox InputTypeComboBox;
         private System.Windows.Forms.TextBox ValueToFindTextBox;
         private System.Windows.Forms.DataGridView dataGridView1;

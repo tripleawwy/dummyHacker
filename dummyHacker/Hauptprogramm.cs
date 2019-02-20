@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace dummyHacker
 {
-    public partial class Form1 : Form
+    public partial class Hauptprogramm : Form
     {
 
         public MemoryEditor firstTry = new MemoryEditor();
@@ -21,19 +21,19 @@ namespace dummyHacker
         int basicValue;
 
 
-        public Form1()
+        public Hauptprogramm()
         {
             InitializeComponent();
         }
 
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void HauptProgramm_Load(object sender, EventArgs e)
         {
             ComboSource();
         }
         private void ComboSource()
         {
-            Dictionary<int,string> ValueSizeAndName = new Dictionary<int, string>();
+            Dictionary<int, string> ValueSizeAndName = new Dictionary<int, string>();
             ValueSizeAndName.Add(1, "Byte");
             ValueSizeAndName.Add(2, "Short");
             ValueSizeAndName.Add(4, "Int");
@@ -46,7 +46,7 @@ namespace dummyHacker
 
         private void FirstScan(object sender, EventArgs e)
         {
-            firstTry.NewProcess(20788);
+            firstTry.NewProcess(4696);
             firstTry.ScanSystem();
             firstTry.CreateEntryPoints();
             firstTry.SearchForValues(size, textboxContent);
@@ -57,12 +57,12 @@ namespace dummyHacker
             dataGridView1.DataSource = source;
             dataGridView1.Columns[2].Visible = false;
             //listBox1.DataSource = firstTry.memoryMemory.ConvertAll(delegate (IntPtr i) { return i.ToString("X8"); });
-            FurtherScans.Enabled = true;
+            NextScanButton.Enabled = true;
             ResetButton.Enabled = true;
             AddressFoundLabel.Visible = true;
             basicValue = textboxContent;
             AddressFoundLabel.Text = firstTry.memoryMemory.Count.ToString();
-            ScanNumberOne.Enabled = false;
+            FirstScanButton.Enabled = false;
         }
        
         private void NextScan(object sender, EventArgs e)
@@ -79,10 +79,10 @@ namespace dummyHacker
 
         private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            size = ((KeyValuePair<int,string>)InputTypeComboBox.SelectedItem).Key;
+            size = ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key;
             if (size!=0)
             {
-                ScanNumberOne.Enabled = true;
+                FirstScanButton.Enabled = true;
             }
         }
 
@@ -156,6 +156,12 @@ namespace dummyHacker
             {
                 Freezer.RunWorkerAsync();
             }
+        }
+
+        private void Open_Click(object sender, EventArgs e)
+        {
+            Attach_Process attach_Process = new Attach_Process();
+            attach_Process.Show();            
         }
     }
 }
