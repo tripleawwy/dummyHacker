@@ -29,12 +29,24 @@ namespace dummyHacker
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            ComboSource();
+        }
+        private void ComboSource()
+        {
+            Dictionary<int,string> ValueSizeAndName = new Dictionary<int, string>();
+            ValueSizeAndName.Add(1, "Byte");
+            ValueSizeAndName.Add(2, "Short");
+            ValueSizeAndName.Add(4, "Int");
+            ValueSizeAndName.Add(8, "Long");
+            InputTypeComboBox.DataSource = new BindingSource(ValueSizeAndName,null);
+            InputTypeComboBox.DisplayMember = "Value";
+            InputTypeComboBox.ValueMember = "Key";
 
         }
 
-        private void firstScan(object sender, EventArgs e)
+        private void FirstScan(object sender, EventArgs e)
         {
-            firstTry.NewProcess(6280);
+            firstTry.NewProcess(20788);
             firstTry.ScanSystem();
             firstTry.CreateEntryPoints();
             firstTry.SearchForValues(size, textboxContent);
@@ -44,17 +56,16 @@ namespace dummyHacker
             //source.DataSource = firstTry.CreateDataGridSource1(textboxContent);
             dataGridView1.DataSource = source;
             dataGridView1.Columns[2].Visible = false;
-
-
             //listBox1.DataSource = firstTry.memoryMemory.ConvertAll(delegate (IntPtr i) { return i.ToString("X8"); });
-            nextScan.Enabled = true;
+            FurtherScans.Enabled = true;
+            ResetButton.Enabled = true;
+            AddressFoundLabel.Visible = true;
             basicValue = textboxContent;
-
-
-
+            AddressFoundLabel.Text = firstTry.memoryMemory.Count.ToString();
+            ScanNumberOne.Enabled = false;
         }
        
-        private void nextScan_Click(object sender, EventArgs e)
+        private void NextScan(object sender, EventArgs e)
         {
             dataGridView1.Columns[2].Visible = true;
             firstTry.CompareLists(size, textboxContent);
@@ -66,69 +77,41 @@ namespace dummyHacker
             //listBox1.DataSource = firstTry.memoryMemory.ConvertAll(delegate (IntPtr i) { return i.ToString("X8"); });
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboBox1.Items.Contains("Byte"))
+            size = ((KeyValuePair<int,string>)InputTypeComboBox.SelectedItem).Key;
+            if (size!=0)
             {
-                size = 1;
-                button1.Enabled = true;
-            }
-            if (comboBox1.Items.Contains("Short"))
-            {
-                size = 2;
-                button1.Enabled = true;
-            }
-            if (comboBox1.Items.Contains("Int"))
-            {
-                size = 4;
-                button1.Enabled = true;
-            }
-            if (comboBox1.Items.Contains("Long"))
-            {
-                size = 8;
-                button1.Enabled = true;
+                ScanNumberOne.Enabled = true;
             }
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void ValueToFindTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (!int.TryParse(textBox1.Text, out textboxContent) && textBox1.TextLength != 0)
+            if (!int.TryParse(ValueToFindTextBox.Text, out textboxContent) && ValueToFindTextBox.TextLength != 0)
             {
-                textBox1.Text = textBox1.Text.Remove(textBox1.Text.Length - 1);
-                textBox1.SelectionStart = textBox1.Text.Length;
+                ValueToFindTextBox.Text = ValueToFindTextBox.Text.Remove(ValueToFindTextBox.Text.Length - 1);
+                ValueToFindTextBox.SelectionStart = ValueToFindTextBox.Text.Length;
             }                     
         }
 
-        private void Refresh_Click(object sender, EventArgs e)
-        {
-            //firstTry.RefreshSource(basicValue);
-            //source.DataSource = firstTry.dataGridSource;
-            dataGridRefresher.RunWorkerAsync();
-            erneuern.Enabled = false;
-        }
-
-        private void schreiben_Click(object sender, EventArgs e)
-        {
-            if (Freeze.Checked==true)
+        private void Schreiben_Click(object sender, EventArgs e)
+        {            
             {
-                Freezer.RunWorkerAsync();
-            }
-            else
-            {
-                IntPtr test = new IntPtr(int.Parse(textBox2.Text, System.Globalization.NumberStyles.HexNumber));
-                int test2 = int.Parse(textBox3.Text);
+                IntPtr test = new IntPtr(int.Parse(WriteAddressTextBox.Text, System.Globalization.NumberStyles.HexNumber));
+                int test2 = int.Parse(WriteValueTextBox.Text);
                 firstTry.TestWrite(test, test2);
             }
         }
 
-        private void textBox2_Click(object sender, EventArgs e)
+        private void AddresstextBox_Click(object sender, EventArgs e)
         {
-            textBox2.SelectAll();
+            WriteAddressTextBox.SelectAll();
         }
 
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        private void Refresher_DoWork(object sender, DoWorkEventArgs e)
         {
-            while (true)
+            while (AutoRefreshcheckBox.Checked==true)
             {
                 firstTry.RefreshSource(basicValue);
                 dataGridView1.Invoke((Action)(() => source.DataSource = firstTry.dataGridSource));
@@ -136,15 +119,15 @@ namespace dummyHacker
             }
         }
 
-        private void textBox1_Click(object sender, EventArgs e)
+        private void ValueToFindtextBox_Click(object sender, EventArgs e)
         {
-            textBox1.SelectAll();
+            ValueToFindTextBox.SelectAll();
         }
 
         private void Freezer_DoWork(object sender, DoWorkEventArgs e)
         {
-            IntPtr test = new IntPtr(int.Parse(textBox2.Text, System.Globalization.NumberStyles.HexNumber));
-            int test2 = int.Parse(textBox3.Text);
+            IntPtr test = new IntPtr(int.Parse(WriteAddressTextBox.Text, System.Globalization.NumberStyles.HexNumber));
+            int test2 = int.Parse(WriteValueTextBox.Text);
             while (Freeze.Checked == true)
             {
                 schreiben.Invoke((Action)(() => schreiben.Enabled = false));
@@ -152,6 +135,27 @@ namespace dummyHacker
                 Thread.Sleep(100);
             }
             schreiben.Invoke((Action)(() => schreiben.Enabled = true));
+        }
+
+        private void ResetButton_Click(object sender, EventArgs e)
+        {
+            firstTry.Reset();
+        }
+
+        private void AutoRefreshcheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (AutoRefreshcheckBox.Checked==true)
+            {
+                dataGridRefresher.RunWorkerAsync();
+            }
+        }
+
+        private void Freeze_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Freeze.Checked == true)
+            {
+                Freezer.RunWorkerAsync();
+            }
         }
     }
 }

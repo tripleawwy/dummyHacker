@@ -28,70 +28,69 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
-            this.nextScan = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.ScanNumberOne = new System.Windows.Forms.Button();
+            this.FurtherScans = new System.Windows.Forms.Button();
+            this.InputTypeComboBox = new System.Windows.Forms.ComboBox();
+            this.ValueToFindTextBox = new System.Windows.Forms.TextBox();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.erneuern = new System.Windows.Forms.Button();
             this.schreiben = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.WriteAddressTextBox = new System.Windows.Forms.TextBox();
+            this.WriteValueTextBox = new System.Windows.Forms.TextBox();
+            this.WriteAddressLabel = new System.Windows.Forms.Label();
+            this.WriteValueLabel = new System.Windows.Forms.Label();
             this.Open = new System.Windows.Forms.Button();
             this.dataGridRefresher = new System.ComponentModel.BackgroundWorker();
             this.Freeze = new System.Windows.Forms.CheckBox();
             this.Freezer = new System.ComponentModel.BackgroundWorker();
+            this.ResetButton = new System.Windows.Forms.Button();
+            this.AutoRefreshcheckBox = new System.Windows.Forms.CheckBox();
+            this.AddressFoundLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
-            // button1
+            // ScanNumberOne
             // 
-            this.button1.Enabled = false;
-            this.button1.Location = new System.Drawing.Point(616, 45);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "First Scan";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.firstScan);
+            this.ScanNumberOne.Enabled = false;
+            this.ScanNumberOne.Location = new System.Drawing.Point(616, 45);
+            this.ScanNumberOne.Name = "ScanNumberOne";
+            this.ScanNumberOne.Size = new System.Drawing.Size(75, 23);
+            this.ScanNumberOne.TabIndex = 1;
+            this.ScanNumberOne.Text = "First Scan";
+            this.ScanNumberOne.UseVisualStyleBackColor = true;
+            this.ScanNumberOne.Click += new System.EventHandler(this.FirstScan);
             // 
-            // nextScan
+            // FurtherScans
             // 
-            this.nextScan.Enabled = false;
-            this.nextScan.Location = new System.Drawing.Point(697, 45);
-            this.nextScan.Name = "nextScan";
-            this.nextScan.Size = new System.Drawing.Size(75, 23);
-            this.nextScan.TabIndex = 5;
-            this.nextScan.Text = "Next Scan";
-            this.nextScan.UseVisualStyleBackColor = true;
-            this.nextScan.Click += new System.EventHandler(this.nextScan_Click);
+            this.FurtherScans.Enabled = false;
+            this.FurtherScans.Location = new System.Drawing.Point(697, 45);
+            this.FurtherScans.Name = "FurtherScans";
+            this.FurtherScans.Size = new System.Drawing.Size(75, 23);
+            this.FurtherScans.TabIndex = 5;
+            this.FurtherScans.Text = "Next Scan";
+            this.FurtherScans.UseVisualStyleBackColor = true;
+            this.FurtherScans.Click += new System.EventHandler(this.NextScan);
             // 
-            // comboBox1
+            // InputTypeComboBox
             // 
-            this.comboBox1.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "Byte",
-            "Short",
-            "Int",
-            "Long"});
-            this.comboBox1.Location = new System.Drawing.Point(339, 47);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 6;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.InputTypeComboBox.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.InputTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.InputTypeComboBox.FormattingEnabled = true;
+            this.InputTypeComboBox.Items.AddRange(new object[] {
+            "asd"});
+            this.InputTypeComboBox.Location = new System.Drawing.Point(339, 47);
+            this.InputTypeComboBox.Name = "InputTypeComboBox";
+            this.InputTypeComboBox.Size = new System.Drawing.Size(121, 21);
+            this.InputTypeComboBox.TabIndex = 6;
+            this.InputTypeComboBox.SelectedIndexChanged += new System.EventHandler(this.ComboBox1_SelectedIndexChanged);
             // 
-            // textBox1
+            // ValueToFindTextBox
             // 
-            this.textBox1.Location = new System.Drawing.Point(494, 47);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 7;
-            this.textBox1.Click += new System.EventHandler(this.textBox1_Click);
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            this.ValueToFindTextBox.Location = new System.Drawing.Point(494, 47);
+            this.ValueToFindTextBox.Name = "ValueToFindTextBox";
+            this.ValueToFindTextBox.Size = new System.Drawing.Size(100, 20);
+            this.ValueToFindTextBox.TabIndex = 7;
+            this.ValueToFindTextBox.Click += new System.EventHandler(this.ValueToFindtextBox_Click);
+            this.ValueToFindTextBox.TextChanged += new System.EventHandler(this.ValueToFindTextBox_TextChanged);
             // 
             // dataGridView1
             // 
@@ -101,16 +100,6 @@
             this.dataGridView1.Size = new System.Drawing.Size(405, 292);
             this.dataGridView1.TabIndex = 9;
             // 
-            // erneuern
-            // 
-            this.erneuern.Location = new System.Drawing.Point(697, 199);
-            this.erneuern.Name = "erneuern";
-            this.erneuern.Size = new System.Drawing.Size(75, 23);
-            this.erneuern.TabIndex = 10;
-            this.erneuern.Text = "Refresh";
-            this.erneuern.UseVisualStyleBackColor = true;
-            this.erneuern.Click += new System.EventHandler(this.Refresh_Click);
-            // 
             // schreiben
             // 
             this.schreiben.Location = new System.Drawing.Point(697, 337);
@@ -119,40 +108,40 @@
             this.schreiben.TabIndex = 11;
             this.schreiben.Text = "schreiben";
             this.schreiben.UseVisualStyleBackColor = true;
-            this.schreiben.Click += new System.EventHandler(this.schreiben_Click);
+            this.schreiben.Click += new System.EventHandler(this.Schreiben_Click);
             // 
-            // textBox2
+            // WriteAddressTextBox
             // 
-            this.textBox2.Location = new System.Drawing.Point(591, 339);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(100, 20);
-            this.textBox2.TabIndex = 12;
-            this.textBox2.Click += new System.EventHandler(this.textBox2_Click);
+            this.WriteAddressTextBox.Location = new System.Drawing.Point(591, 339);
+            this.WriteAddressTextBox.Name = "WriteAddressTextBox";
+            this.WriteAddressTextBox.Size = new System.Drawing.Size(100, 20);
+            this.WriteAddressTextBox.TabIndex = 12;
+            this.WriteAddressTextBox.Click += new System.EventHandler(this.AddresstextBox_Click);
             // 
-            // textBox3
+            // WriteValueTextBox
             // 
-            this.textBox3.Location = new System.Drawing.Point(591, 366);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(100, 20);
-            this.textBox3.TabIndex = 13;
+            this.WriteValueTextBox.Location = new System.Drawing.Point(591, 366);
+            this.WriteValueTextBox.Name = "WriteValueTextBox";
+            this.WriteValueTextBox.Size = new System.Drawing.Size(100, 20);
+            this.WriteValueTextBox.TabIndex = 13;
             // 
-            // label1
+            // WriteAddressLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(522, 342);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(45, 13);
-            this.label1.TabIndex = 14;
-            this.label1.Text = "Address";
+            this.WriteAddressLabel.AutoSize = true;
+            this.WriteAddressLabel.Location = new System.Drawing.Point(522, 342);
+            this.WriteAddressLabel.Name = "WriteAddressLabel";
+            this.WriteAddressLabel.Size = new System.Drawing.Size(45, 13);
+            this.WriteAddressLabel.TabIndex = 14;
+            this.WriteAddressLabel.Text = "Address";
             // 
-            // label2
+            // WriteValueLabel
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(532, 369);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(34, 13);
-            this.label2.TabIndex = 15;
-            this.label2.Text = "Value";
+            this.WriteValueLabel.AutoSize = true;
+            this.WriteValueLabel.Location = new System.Drawing.Point(532, 369);
+            this.WriteValueLabel.Name = "WriteValueLabel";
+            this.WriteValueLabel.Size = new System.Drawing.Size(34, 13);
+            this.WriteValueLabel.TabIndex = 15;
+            this.WriteValueLabel.Text = "Value";
             // 
             // Open
             // 
@@ -165,7 +154,7 @@
             // 
             // dataGridRefresher
             // 
-            this.dataGridRefresher.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.dataGridRefresher.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Refresher_DoWork);
             // 
             // Freeze
             // 
@@ -176,29 +165,64 @@
             this.Freeze.TabIndex = 17;
             this.Freeze.Text = "Freeze";
             this.Freeze.UseVisualStyleBackColor = true;
+            this.Freeze.CheckedChanged += new System.EventHandler(this.Freeze_CheckedChanged);
             // 
             // Freezer
             // 
             this.Freezer.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Freezer_DoWork);
+            // 
+            // ResetButton
+            // 
+            this.ResetButton.Enabled = false;
+            this.ResetButton.Location = new System.Drawing.Point(616, 75);
+            this.ResetButton.Name = "ResetButton";
+            this.ResetButton.Size = new System.Drawing.Size(75, 23);
+            this.ResetButton.TabIndex = 18;
+            this.ResetButton.Text = "Reset";
+            this.ResetButton.UseVisualStyleBackColor = true;
+            this.ResetButton.Click += new System.EventHandler(this.ResetButton_Click);
+            // 
+            // AutoRefreshcheckBox
+            // 
+            this.AutoRefreshcheckBox.AutoSize = true;
+            this.AutoRefreshcheckBox.Location = new System.Drawing.Point(12, 83);
+            this.AutoRefreshcheckBox.Name = "AutoRefreshcheckBox";
+            this.AutoRefreshcheckBox.Size = new System.Drawing.Size(85, 17);
+            this.AutoRefreshcheckBox.TabIndex = 19;
+            this.AutoRefreshcheckBox.Text = "AutoRefresh";
+            this.AutoRefreshcheckBox.UseVisualStyleBackColor = true;
+            this.AutoRefreshcheckBox.CheckedChanged += new System.EventHandler(this.AutoRefreshcheckBox_CheckedChanged);
+            // 
+            // AddressFoundLabel
+            // 
+            this.AddressFoundLabel.AutoSize = true;
+            this.AddressFoundLabel.Location = new System.Drawing.Point(302, 83);
+            this.AddressFoundLabel.Name = "AddressFoundLabel";
+            this.AddressFoundLabel.Size = new System.Drawing.Size(73, 13);
+            this.AddressFoundLabel.TabIndex = 20;
+            this.AddressFoundLabel.Text = "AddressCount";
+            this.AddressFoundLabel.Visible = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.AddressFoundLabel);
+            this.Controls.Add(this.AutoRefreshcheckBox);
+            this.Controls.Add(this.ResetButton);
             this.Controls.Add(this.Freeze);
             this.Controls.Add(this.Open);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.WriteValueLabel);
+            this.Controls.Add(this.WriteAddressLabel);
+            this.Controls.Add(this.WriteValueTextBox);
+            this.Controls.Add(this.WriteAddressTextBox);
             this.Controls.Add(this.schreiben);
-            this.Controls.Add(this.erneuern);
             this.Controls.Add(this.dataGridView1);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.comboBox1);
-            this.Controls.Add(this.nextScan);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.ValueToFindTextBox);
+            this.Controls.Add(this.InputTypeComboBox);
+            this.Controls.Add(this.FurtherScans);
+            this.Controls.Add(this.ScanNumberOne);
             this.Cursor = System.Windows.Forms.Cursors.Default;
             this.Name = "Form1";
             this.Text = "Form1";
@@ -210,20 +234,22 @@
         }
 
         #endregion
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button nextScan;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button ScanNumberOne;
+        private System.Windows.Forms.Button FurtherScans;
+        private System.Windows.Forms.ComboBox InputTypeComboBox;
+        private System.Windows.Forms.TextBox ValueToFindTextBox;
         private System.Windows.Forms.DataGridView dataGridView1;
-        private System.Windows.Forms.Button erneuern;
         private System.Windows.Forms.Button schreiben;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox WriteAddressTextBox;
+        private System.Windows.Forms.TextBox WriteValueTextBox;
+        private System.Windows.Forms.Label WriteAddressLabel;
+        private System.Windows.Forms.Label WriteValueLabel;
         private System.Windows.Forms.Button Open;
         private System.ComponentModel.BackgroundWorker dataGridRefresher;
         private System.Windows.Forms.CheckBox Freeze;
         private System.ComponentModel.BackgroundWorker Freezer;
+        private System.Windows.Forms.Button ResetButton;
+        private System.Windows.Forms.CheckBox AutoRefreshcheckBox;
+        private System.Windows.Forms.Label AddressFoundLabel;
     }
 }

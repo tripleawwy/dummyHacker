@@ -39,7 +39,7 @@ namespace dummyHacker
         readonly long maximum32BitAddress = 0x7fffffff;
         private IntPtr minimumAddress;
         public Dictionary<IntPtr, int> regionBeginning;
-        private List<IntPtr> memoryMemory;
+        public List<IntPtr> memoryMemory;
         public List<MyStruct> dataGridSource;
 
         public List <MyStruct> CreateDataGridSource(int valueToFind)
@@ -138,10 +138,8 @@ namespace dummyHacker
                 {
                     break;
                 }
-                if ( /* (memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE 
-                        || memoryInfo.Protect == AllocationProtectEnum.PAGE_EXECUTE_READWRITE) */
-                        
-                     memoryInfo.State == MEM_COMMIT)
+                if (memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE
+                     && memoryInfo.State == MEM_COMMIT)
                 {
                     regionBeginning.Add(memoryInfo.BaseAddress, (int)memoryInfo.RegionSize);
                 }
@@ -198,10 +196,6 @@ namespace dummyHacker
                         case 4:
                             for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
                             {
-                                if ((pair.Key+i) == new IntPtr(0x28ac610))
-                                {
-                                    int egal = 0;
-                                }
                                 if ((memoryBuffer[i + 3] << 8 | memoryBuffer[i + 2] << 8 | memoryBuffer[i + 1] << 8 | memoryBuffer[i]) == valueToFind)
                                 {
                                     memoryMemory.Add(pair.Key + i);
@@ -256,37 +250,37 @@ namespace dummyHacker
                     switch (_typeSize)
                     {
                         case 1:
-                                if (compareBuffer[0] != _valueToFind)
-                                {
-                                    memoryMemory.Remove(memoryMemory[i]);
-                                }
+                            if (compareBuffer[0] != _valueToFind)
+                            {
+                                memoryMemory.Remove(memoryMemory[i]);
+                            }
                             break;
                         case 2:
 
-                                if ((compareBuffer[1] << 8 | compareBuffer[0]) != _valueToFind)
-                                {
-                                    memoryMemory.Remove(memoryMemory[i]);
-                                }
+                            if ((compareBuffer[1] << 8 | compareBuffer[0]) != _valueToFind)
+                            {
+                                memoryMemory.Remove(memoryMemory[i]);
+                            }
 
                             break;
                         case 4:
-                                if ((compareBuffer[3] << 8 | compareBuffer[2] << 8 | compareBuffer[1] << 8 | compareBuffer[0]) != _valueToFind)
-                                {
-                                    memoryMemory.Remove(memoryMemory[i]);
-                                }
+                            if ((compareBuffer[3] << 8 | compareBuffer[2] << 8 | compareBuffer[1] << 8 | compareBuffer[0]) != _valueToFind)
+                            {
+                                memoryMemory.Remove(memoryMemory[i]);
+                            }
                             break;
                         case 8:
-                                if ((long)(compareBuffer[7] << 8
-                                    | compareBuffer[6] << 8
-                                    | compareBuffer[5] << 8
-                                    | compareBuffer[4] << 8
-                                    | compareBuffer[3] << 8
-                                    | compareBuffer[2] << 8
-                                    | compareBuffer[1] << 8
-                                    | compareBuffer[0]) != _valueToFind)
-                                {
-                                    memoryMemory.Remove(memoryMemory[i]);
-                                }
+                            if ((long)(compareBuffer[7] << 8
+                                | compareBuffer[6] << 8
+                                | compareBuffer[5] << 8
+                                | compareBuffer[4] << 8
+                                | compareBuffer[3] << 8
+                                | compareBuffer[2] << 8
+                                | compareBuffer[1] << 8
+                                | compareBuffer[0]) != _valueToFind)
+                            {
+                                memoryMemory.Remove(memoryMemory[i]);
+                            }
                             break;
                     }
                 }
@@ -302,7 +296,10 @@ namespace dummyHacker
 
         public void Reset()
         {
-
+            targetHandle = IntPtr.Zero;
+            minimumAddress = IntPtr.Zero;
+            dataGridSource = new List<MyStruct>();
+            memoryMemory = new List<IntPtr>();
         }
 
 
