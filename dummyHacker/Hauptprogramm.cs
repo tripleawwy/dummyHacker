@@ -17,8 +17,8 @@ namespace dummyHacker
         public MemoryEditor firstTry = new MemoryEditor();
         BindingSource source = new BindingSource();
         int size;
-        int textboxContent;
-        int basicValue;
+        byte[] textboxContent ;
+        long basicValue;
 
 
         public Hauptprogramm()
@@ -33,11 +33,12 @@ namespace dummyHacker
         }
         private void ComboSource()
         {
-            Dictionary<int, string> ValueSizeAndName = new Dictionary<int, string>();
-            ValueSizeAndName.Add(1, "Byte");
-            ValueSizeAndName.Add(2, "Short");
-            ValueSizeAndName.Add(4, "Int");
-            ValueSizeAndName.Add(8, "Long");
+            Dictionary<int, string> ValueSizeAndName = new Dictionary<int, string> { { 1, "Byte" }, { 2, "Short" }, { 4, "Int" }, { 8, "Long" } ,{42,"String" } };                
+            //ValueSizeAndName.Add(1, "Byte");
+            //ValueSizeAndName.Add(2, "Short");
+            //ValueSizeAndName.Add(4, "Int");
+            //ValueSizeAndName.Add(8, "Long");
+
             InputTypeComboBox.DataSource = new BindingSource(ValueSizeAndName,null);
             InputTypeComboBox.DisplayMember = "Value";
             InputTypeComboBox.ValueMember = "Key";
@@ -46,11 +47,11 @@ namespace dummyHacker
 
         private void FirstScan(object sender, EventArgs e)
         {
-            firstTry.NewProcess(4696);
             firstTry.ScanSystem();
             firstTry.CreateEntryPoints();
+
             firstTry.SearchForValues(size, textboxContent);
-            firstTry.CreateDataGridSource1(textboxContent);
+            firstTry.CreateDataGridSource1(42/*textboxContent*/);
 
             source.DataSource = firstTry.dataGridSource;
             //source.DataSource = firstTry.CreateDataGridSource1(textboxContent);
@@ -60,7 +61,7 @@ namespace dummyHacker
             NextScanButton.Enabled = true;
             ResetButton.Enabled = true;
             AddressFoundLabel.Visible = true;
-            basicValue = textboxContent;
+            basicValue = BitConverter.ToInt64(textboxContent,0); //ToDo: fehler bei string
             AddressFoundLabel.Text = firstTry.memoryMemory.Count.ToString();
             FirstScanButton.Enabled = false;
         }
@@ -68,10 +69,10 @@ namespace dummyHacker
         private void NextScan(object sender, EventArgs e)
         {
             dataGridView1.Columns[2].Visible = true;
-            firstTry.CompareLists(size, textboxContent);
-            firstTry.CompareDataGridSource(textboxContent, basicValue);
+            firstTry.CompareLists(size, BitConverter.ToInt64( textboxContent,0));
+            firstTry.CompareDataGridSource(BitConverter.ToInt64( textboxContent,0), basicValue);
             source.DataSource = firstTry.dataGridSource;
-            basicValue = textboxContent;
+            basicValue = BitConverter.ToInt64( textboxContent,0); //ToDo: fehler
 
             //dataGridView1.DataSource = source;
             //listBox1.DataSource = firstTry.memoryMemory.ConvertAll(delegate (IntPtr i) { return i.ToString("X8"); });
@@ -80,19 +81,63 @@ namespace dummyHacker
         private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             size = ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key;
-            if (size!=0)
+            if (size==42)
             {
-                FirstScanButton.Enabled = true;
+                size = ValueToFindTextBox.Text.Length;
             }
         }
 
         private void ValueToFindTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (!int.TryParse(ValueToFindTextBox.Text, out textboxContent) && ValueToFindTextBox.TextLength != 0)
+
+            switch (((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key)
             {
-                ValueToFindTextBox.Text = ValueToFindTextBox.Text.Remove(ValueToFindTextBox.Text.Length - 1);
-                ValueToFindTextBox.SelectionStart = ValueToFindTextBox.Text.Length;
-            }                     
+                case 1:
+                    if (byte.TryParse(ValueToFindTextBox.Text, out byte result1))
+                    {
+                        textboxContent = new byte[1] { result1 };
+                    }
+                    break;
+                case 2:
+                    if (short.TryParse(ValueToFindTextBox.Text, out short result2))
+                    {
+                        textboxContent = new byte[2] { (byte)(result2 & 255), (byte)((result2 >> 8) & 255) };
+                    }
+                    break;
+                case 4:
+                    if (int.TryParse(ValueToFindTextBox.Text, out int result4))
+                    {
+                        textboxContent = new byte[4] { (byte)(result4 & 255)
+                            , (byte)((result4 >> 8) & 255)
+                            , (byte)((result4 >> 16) & 255)
+                            , (byte)((result4 >> 24) & 255) };
+                    }
+                    break;
+                case 8:
+                    if (long.TryParse(ValueToFindTextBox.Text, out long result8))
+                    {
+                        textboxContent = new byte[8] { (byte)(result8 & 255)
+                            , (byte)((result8 >> 8) & 255)
+                            , (byte)((result8 >> 16) & 255)
+                            , (byte)((result8 >> 24) & 255)
+                            , (byte)((result8 >> 32) & 255)
+                            , (byte)((result8 >> 40) & 255)
+                            , (byte)((result8 >> 48) & 255)
+                            , (byte)((result8 >> 56) & 255)};
+                    }
+                    break;
+                default:
+                    textboxContent = new byte[ValueToFindTextBox.Text.Length];
+                    char[] arsch = ValueToFindTextBox.Text.ToCharArray();
+
+                    for (int i = 0; i < arsch.Length; i++)
+                    {
+                        textboxContent[i] = (byte)arsch[i];
+                    }
+
+                    break;
+            }
+                  
         }
 
         private void Schreiben_Click(object sender, EventArgs e)
@@ -161,7 +206,14 @@ namespace dummyHacker
         private void Open_Click(object sender, EventArgs e)
         {
             AttachProcess attach_Process = new AttachProcess();
-            attach_Process.Show();            
+
+            if (attach_Process.ShowDialog() == DialogResult.OK)
+            {
+                firstTry.NewProcess( attach_Process.GetProcessId() );
+                FirstScanButton.Enabled = true;
+            }
+
+            attach_Process.Close();
         }
     }
 }

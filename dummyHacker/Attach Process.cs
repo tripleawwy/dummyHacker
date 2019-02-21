@@ -16,22 +16,41 @@ namespace dummyHacker
         public AttachProcess()
         {
             InitializeComponent();
-            LoadProcesses();
+
         }
 
         private void Attach_Process_Load(object sender, EventArgs e)
         {
-
+            LoadProcesses();
         }
 
         private void LoadProcesses()
         {
             foreach (Process activeProcess in Process.GetProcesses())
             {
-                ListViewItem item = new ListViewItem(activeProcess.ProcessName);
-                item.SubItems.Add(activeProcess.Id.ToString());
-                ProcessListView.Items.Add(item);
+                if (!String.IsNullOrEmpty(activeProcess.MainWindowTitle))
+                {
+                    ListViewItem item = new ListViewItem(activeProcess.MainWindowTitle);
+                    item.SubItems.Add(activeProcess.Id.ToString());
+                    ProcessListView.Items.Add(item);
+                }
             }
+        }
+
+        public int GetProcessId()
+        {           
+            return int.Parse(ProcessListView.SelectedItems[0].SubItems[1].Text);
+        }
+
+        private void AcceptProcessButton_Click(object sender, EventArgs e)
+        {
+            //hier hat user entschieden welcher prozess
+            //GetProcessId();
+            this.DialogResult = DialogResult.OK;
+
+            //this.Close();
+
+
         }
     }
 }
