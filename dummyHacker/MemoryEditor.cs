@@ -12,12 +12,12 @@ namespace dummyHacker
 {
     public class MyStruct
     {
-        public MyStruct(string _ptr, long _value)
+        public MyStruct(string _ptr, string _value)
         {
             Address = _ptr;
             Value = _value;
         }
-        public MyStruct(string _ptr, long _value, long _previousValue)
+        public MyStruct(string _ptr, string _value, string _previousValue)
         {
             Address = _ptr;
             Value = _value;
@@ -25,8 +25,8 @@ namespace dummyHacker
         }
 
         public string Address { get; set; }
-        public long Value { get; set; }
-        public long PreviousValue { get; set; }
+        public string Value { get; set; }
+        public string PreviousValue { get; set; }
 
     }
 
@@ -42,7 +42,7 @@ namespace dummyHacker
         public List<IntPtr> memoryMemory;
         public List<MyStruct> dataGridSource;
 
-        public List <MyStruct> CreateDataGridSource(int valueToFind)
+        public List <MyStruct> CreateDataGridSource(string valueToFind)
         {
             List<MyStruct> dataGridSource = new List<MyStruct>();
             foreach (IntPtr address in memoryMemory)
@@ -53,7 +53,7 @@ namespace dummyHacker
             return dataGridSource;
         }
 
-        public void CreateDataGridSource1(int valueToFind)
+        public void CreateDataGridSource1(string valueToFind)
         {
             dataGridSource = new List<MyStruct>();
             foreach (IntPtr address in memoryMemory)
@@ -62,7 +62,7 @@ namespace dummyHacker
                 dataGridSource.Add(record);
             }
         }
-        public void CreateDataGridSource1(long valueToFind, long previousValue)
+        public void CreateDataGridSource1(string valueToFind, string previousValue)
         {
             dataGridSource = new List<MyStruct>();
             foreach (IntPtr address in memoryMemory)
@@ -72,7 +72,7 @@ namespace dummyHacker
             }
         }
 
-        public void CompareDataGridSource(long valueToFind, long previousValue)
+        public void CompareDataGridSource(string valueToFind, string previousValue)
         {
             dataGridSource = new List<MyStruct>();
             foreach (IntPtr item in memoryMemory)
@@ -82,7 +82,7 @@ namespace dummyHacker
             }
         }
 
-        public void RefreshSource(long previousValue)
+        public void RefreshSource(string previousValue)
         {
                 int currentValue;
                 uint size = 4;
@@ -92,24 +92,10 @@ namespace dummyHacker
                     byte[] refresh = new byte[size];
                     ReadProcessMemory(targetHandle, item, refresh, size, out notNecessary);
                     currentValue = BitConverter.ToInt32(refresh, 0);
-                    MyStruct compare = new MyStruct(item.ToString("X8"), currentValue, previousValue);
+                    MyStruct compare = new MyStruct(item.ToString("X8"), currentValue.ToString(), previousValue);
                     dataGridSource.Add(compare);
                 }
         }
-
-        public void RefreshList(int timerInMs, int previousValue)
-        {
-            int currentValue;
-            uint size = 4;
-            foreach (IntPtr item in memoryMemory)
-            {
-                byte[] refresh = new byte[size];
-                ReadProcessMemory(targetHandle, item, refresh, size, out notNecessary);
-                currentValue = BitConverter.ToInt32(refresh, 0);
-
-            }
-        }
-
 
         public void NewProcess(int processId)
         {
@@ -254,66 +240,65 @@ namespace dummyHacker
             }
         }
 
-        public void ShowMatchingAddresses()
+        public void CompareLists(int typeSize, byte[] valueToFind)
         {
-            //ScanSystem();
-            //CreateEntryPoints();
-            //int _typeSize = 4;
-            //long _valueToFind = 20;
-            //SearchForValues(_typeSize, _valueToFind);
-            //for (int i = 0; i < memoryMemory.Count; i++)
-            //{
-            //    Console.Write(memoryMemory.ElementAt(i).ToString("X8") + " ");
-            //}
-            //Console.WriteLine(memoryMemory.Count);
-        }
-
-        public void CompareLists(int typeSize, long valueToFind)
-        {
-            uint _typeSize = (uint)typeSize;
-            long _valueToFind = valueToFind;
-            byte[] compareBuffer = new byte[_typeSize];
+            byte[] compareBuffer = new byte[typeSize];
 
             for(int i = memoryMemory.Count-1; i >=0; i--)
             {
-                if (ReadProcessMemory(targetHandle, memoryMemory[i], compareBuffer, _typeSize, out notNecessary))
+                if (ReadProcessMemory(targetHandle, memoryMemory[i], compareBuffer, (uint)typeSize, out notNecessary))
                 {
-                    switch (_typeSize)
+                    for (int k = 0; k < compareBuffer.Length - (typeSize - 1); k++)
                     {
-                        case 1:
-                            if (compareBuffer[0] != _valueToFind)
+                        bool found = true;
+                        for (int j = 0; j < typeSize; j++)
+                        {
+                            if (compareBuffer[i + j] != valueToFind[j])
                             {
-                                memoryMemory.Remove(memoryMemory[i]);
+                                found = false;
                             }
-                            break;
-                        case 2:
-
-                            if ((compareBuffer[1] << 8 | compareBuffer[0]) != _valueToFind)
-                            {
-                                memoryMemory.Remove(memoryMemory[i]);
-                            }
-
-                            break;
-                        case 4:
-                            if ((compareBuffer[3] << 8 | compareBuffer[2] << 8 | compareBuffer[1] << 8 | compareBuffer[0]) != _valueToFind)
-                            {
-                                memoryMemory.Remove(memoryMemory[i]);
-                            }
-                            break;
-                        case 8:
-                            if ((long)(compareBuffer[7] << 8
-                                | compareBuffer[6] << 8
-                                | compareBuffer[5] << 8
-                                | compareBuffer[4] << 8
-                                | compareBuffer[3] << 8
-                                | compareBuffer[2] << 8
-                                | compareBuffer[1] << 8
-                                | compareBuffer[0]) != _valueToFind)
-                            {
-                                memoryMemory.Remove(memoryMemory[i]);
-                            }
-                            break;
+                        }
+                        if (found)
+                        {
+                            memoryMemory.Remove(memoryMemory[i]);
+                        }
                     }
+                    //switch (_typeSize)
+                    //{
+                    //    case 1:
+                    //        if (compareBuffer[0] != _valueToFind)
+                    //        {
+                    //            memoryMemory.Remove(memoryMemory[i]);
+                    //        }
+                    //        break;
+                    //    case 2:
+
+                    //        if ((compareBuffer[1] << 8 | compareBuffer[0]) != _valueToFind)
+                    //        {
+                    //            memoryMemory.Remove(memoryMemory[i]);
+                    //        }
+
+                    //        break;
+                    //    case 4:
+                    //        if ((compareBuffer[3] << 8 | compareBuffer[2] << 8 | compareBuffer[1] << 8 | compareBuffer[0]) != _valueToFind)
+                    //        {
+                    //            memoryMemory.Remove(memoryMemory[i]);
+                    //        }
+                    //        break;
+                    //    case 8:
+                    //        if ((long)(compareBuffer[7] << 8
+                    //            | compareBuffer[6] << 8
+                    //            | compareBuffer[5] << 8
+                    //            | compareBuffer[4] << 8
+                    //            | compareBuffer[3] << 8
+                    //            | compareBuffer[2] << 8
+                    //            | compareBuffer[1] << 8
+                    //            | compareBuffer[0]) != _valueToFind)
+                    //        {
+                    //            memoryMemory.Remove(memoryMemory[i]);
+                    //        }
+                    //        break;
+                    //}
                 }
             }
         }

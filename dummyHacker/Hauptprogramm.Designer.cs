@@ -94,7 +94,6 @@
             this.ValueToFindTextBox.Size = new System.Drawing.Size(100, 21);
             this.ValueToFindTextBox.TabIndex = 7;
             this.ValueToFindTextBox.Click += new System.EventHandler(this.ValueToFindtextBox_Click);
-            this.ValueToFindTextBox.TextChanged += new System.EventHandler(this.ValueToFindTextBox_TextChanged);
             // 
             // dataGridView1
             // 
@@ -211,7 +210,7 @@
             // 
             this.AddressFoundLabel.AutoSize = true;
             this.AddressFoundLabel.Font = new System.Drawing.Font("Calibri", 8.25F);
-            this.AddressFoundLabel.Location = new System.Drawing.Point(302, 83);
+            this.AddressFoundLabel.Location = new System.Drawing.Point(344, 84);
             this.AddressFoundLabel.Name = "AddressFoundLabel";
             this.AddressFoundLabel.Size = new System.Drawing.Size(73, 13);
             this.AddressFoundLabel.TabIndex = 20;

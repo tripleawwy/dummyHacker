@@ -18,7 +18,8 @@ namespace dummyHacker
         BindingSource source = new BindingSource();
         int size;
         byte[] textboxContent ;
-        long basicValue;
+        string penner;
+        string basicValue;
 
 
         public Hauptprogramm()
@@ -34,11 +35,6 @@ namespace dummyHacker
         private void ComboSource()
         {
             Dictionary<int, string> ValueSizeAndName = new Dictionary<int, string> { { 1, "Byte" }, { 2, "Short" }, { 4, "Int" }, { 8, "Long" } ,{42,"String" } };                
-            //ValueSizeAndName.Add(1, "Byte");
-            //ValueSizeAndName.Add(2, "Short");
-            //ValueSizeAndName.Add(4, "Int");
-            //ValueSizeAndName.Add(8, "Long");
-
             InputTypeComboBox.DataSource = new BindingSource(ValueSizeAndName,null);
             InputTypeComboBox.DisplayMember = "Value";
             InputTypeComboBox.ValueMember = "Key";
@@ -47,11 +43,9 @@ namespace dummyHacker
 
         private void FirstScan(object sender, EventArgs e)
         {
-            firstTry.ScanSystem();
-            firstTry.CreateEntryPoints();
-
+            ScanTextToByteArray();
             firstTry.SearchForValues(size, textboxContent);
-            firstTry.CreateDataGridSource1(42/*textboxContent*/);
+            firstTry.CreateDataGridSource1(penner);
 
             source.DataSource = firstTry.dataGridSource;
             //source.DataSource = firstTry.CreateDataGridSource1(textboxContent);
@@ -61,35 +55,31 @@ namespace dummyHacker
             NextScanButton.Enabled = true;
             ResetButton.Enabled = true;
             AddressFoundLabel.Visible = true;
-            basicValue = BitConverter.ToInt64(textboxContent,0); //ToDo: fehler bei string
+            basicValue = penner; //ToDo: fehler bei string
             AddressFoundLabel.Text = firstTry.memoryMemory.Count.ToString();
             FirstScanButton.Enabled = false;
         }
        
         private void NextScan(object sender, EventArgs e)
         {
+            ScanTextToByteArray();
             dataGridView1.Columns[2].Visible = true;
-            firstTry.CompareLists(size, BitConverter.ToInt64( textboxContent,0));
-            firstTry.CompareDataGridSource(BitConverter.ToInt64( textboxContent,0), basicValue);
+            firstTry.CompareLists(size, textboxContent);//ToDo: fehler
+            firstTry.CompareDataGridSource(penner, basicValue);//ToDo: fehler
             source.DataSource = firstTry.dataGridSource;
-            basicValue = BitConverter.ToInt64( textboxContent,0); //ToDo: fehler
+            basicValue = penner; //ToDo: fehler
 
-            //dataGridView1.DataSource = source;
             //listBox1.DataSource = firstTry.memoryMemory.ConvertAll(delegate (IntPtr i) { return i.ToString("X8"); });
         }
 
         private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             size = ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key;
-            if (size==42)
-            {
-                size = ValueToFindTextBox.Text.Length;
-            }
         }
 
-        private void ValueToFindTextBox_TextChanged(object sender, EventArgs e)
+        private void ScanTextToByteArray()
         {
-
+            penner = ValueToFindTextBox.Text;
             switch (((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key)
             {
                 case 1:
@@ -127,6 +117,7 @@ namespace dummyHacker
                     }
                     break;
                 default:
+                    size = ValueToFindTextBox.Text.Length;
                     textboxContent = new byte[ValueToFindTextBox.Text.Length];
                     char[] arsch = ValueToFindTextBox.Text.ToCharArray();
 
@@ -134,10 +125,8 @@ namespace dummyHacker
                     {
                         textboxContent[i] = (byte)arsch[i];
                     }
-
                     break;
             }
-                  
         }
 
         private void Schreiben_Click(object sender, EventArgs e)
@@ -210,9 +199,10 @@ namespace dummyHacker
             if (attach_Process.ShowDialog() == DialogResult.OK)
             {
                 firstTry.NewProcess( attach_Process.GetProcessId() );
+                firstTry.ScanSystem();
+                firstTry.CreateEntryPoints();
                 FirstScanButton.Enabled = true;
             }
-
             attach_Process.Close();
         }
     }
