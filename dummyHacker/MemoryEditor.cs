@@ -35,21 +35,21 @@ namespace dummyHacker
 
         private IntPtr notNecessary = IntPtr.Zero;
         private IntPtr targetHandle = new IntPtr();
-        int _processId=-1;
-        readonly long maximum32BitAddress = 0x7fffffff;
+        int _processId = -1;
+        readonly long maximum32BitAddress = 0x7fff0000;
         private IntPtr minimumAddress;
-        public Dictionary<IntPtr, int> regionBeginning;
+        public Dictionary<IntPtr, uint> regionBeginning;
         public List<IntPtr> memoryMemory;
         public List<MyStruct> dataGridSource;
 
-        public List <MyStruct> CreateDataGridSource(string valueToFind)
+        public List<MyStruct> CreateDataGridSource(string valueToFind)
         {
             List<MyStruct> dataGridSource = new List<MyStruct>();
             foreach (IntPtr address in memoryMemory)
             {
-                MyStruct record = new MyStruct(address.ToString("X8"),valueToFind);
+                MyStruct record = new MyStruct(address.ToString("X8"), valueToFind);
                 dataGridSource.Add(record);
-            }            
+            }
             return dataGridSource;
         }
 
@@ -82,61 +82,89 @@ namespace dummyHacker
             }
         }
 
-        public void RefreshSource(string previousValue)
+        public void RefreshSource(string previousValue, int size, bool isString)
         {
-                int currentValue;
-                uint size = 4;
-                dataGridSource = new List<MyStruct>();
-                foreach (IntPtr item in memoryMemory)
+            string currentValue;
+            dataGridSource = new List<MyStruct>();
+            foreach (IntPtr item in memoryMemory)
+            {
+                byte[] refresh = new byte[size];
+                ReadProcessMemory(targetHandle, item, refresh, (uint)size, out notNecessary);
+                if (isString)
                 {
-                    byte[] refresh = new byte[size];
-                    ReadProcessMemory(targetHandle, item, refresh, size, out notNecessary);
-                    currentValue = BitConverter.ToInt32(refresh, 0);
-                    MyStruct compare = new MyStruct(item.ToString("X8"), currentValue.ToString(), previousValue);
-                    dataGridSource.Add(compare);
+                    currentValue = System.Text.Encoding.Default.GetString(refresh);
                 }
+                else
+                {
+                    currentValue = (BitConverter.ToInt32(refresh, 0)).ToString();
+                }
+                MyStruct compare = new MyStruct(item.ToString("X8"), currentValue, previousValue);
+                dataGridSource.Add(compare);
+            }
         }
 
         public void NewProcess(int processId)
         {
-            regionBeginning = new Dictionary<IntPtr, int>();
-
+            regionBeginning = new Dictionary<IntPtr, uint>();
             targetHandle = OpenProcess(QueryInformation | VirtualMemoryRead | VirtualMemoryWrite | VirtualMemoryOperation, false, processId);
             _processId = processId;
         }
+
         public void ScanSystem()
         {
             SystemInfo currentSystem = new SystemInfo();
             GetSystemInfo(out currentSystem);
-
-            IntPtr minimumAddress = currentSystem.MinimumApplicationAddress;
+            minimumAddress = currentSystem.MinimumApplicationAddress;
         }
+
+
+
+
         public void CreateEntryPoints()
         {
             long helpMinimumAddress = (long)minimumAddress;
             MEMORY_BASIC_INFORMATION memoryInfo = new MEMORY_BASIC_INFORMATION();
 
-            while (helpMinimumAddress <= maximum32BitAddress)
+            while (helpMinimumAddress < maximum32BitAddress)
             {
+                
                 minimumAddress = new IntPtr(helpMinimumAddress);
                 VirtualQueryEx(targetHandle, minimumAddress, out memoryInfo, (uint)Marshal.SizeOf(memoryInfo));
-                if ((long)memoryInfo.RegionSize < 0) //TODO: prüfen regionsize int oder uint  |  prüfen cast auf long oder int
+                if (memoryInfo.RegionSize < 0) //TODO: prüfen regionsize int oder uint  |  prüfen cast auf long oder int
                 {
                     break;
                 }
-                if (memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE
-                     && memoryInfo.State == MEM_COMMIT)
+
+                if (
+                    //writable = not (not writeable)
+                    memoryInfo.Protect != AllocationProtectEnum.PAGE_EXECUTE_READ //not writable
+                    && memoryInfo.Protect != AllocationProtectEnum.PAGE_READONLY //not writable
+
+                    //readonly
+                    //(memoryInfo.Protect == AllocationProtectEnum.PAGE_EXECUTE_READ //not writable
+                    //|| memoryInfo.Protect == AllocationProtectEnum.PAGE_READONLY) //not writable
+
+                    //others
+                     //memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE //liefert nicht alle writables
+
+                    && memoryInfo.Protect != AllocationProtectEnum.PAGE_WRITECOPY //CopyOnWrite 
+                    && (memoryInfo.Type == TypeEnum.MEM_IMAGE || memoryInfo.Type == TypeEnum.MEM_PRIVATE))
                 {
-                    regionBeginning.Add(memoryInfo.BaseAddress, (int)memoryInfo.RegionSize);
+                        regionBeginning.Add(memoryInfo.BaseAddress, memoryInfo.RegionSize);
                 }
-                helpMinimumAddress = helpMinimumAddress + memoryInfo.RegionSize;
+
+
+                helpMinimumAddress = (uint)memoryInfo.BaseAddress + memoryInfo.RegionSize;
             }
-            int x = regionBeginning.Count;
+
         }
+
+
+
 
         public void AnalyzeRegions()
         {
-            foreach (KeyValuePair<IntPtr, int> pair in regionBeginning)
+            foreach (KeyValuePair<IntPtr, uint> pair in regionBeginning)
             {
                 byte[] memoryBuffer = new byte[pair.Value];
                 if (ReadProcessMemory(targetHandle, pair.Key, memoryBuffer, (uint)pair.Value, out notNecessary))
@@ -146,15 +174,17 @@ namespace dummyHacker
                         //Console.Write(item.ToString("X2") + " ");
                     }
                 }
-            }            
+            }
         }
-        
+
+
 
         public void SearchForValues(int typeSize, byte[] valueToFind)
         {
-                memoryMemory = new List<IntPtr>();
+            //ToDo: das hier ist arsch langsam...
+            memoryMemory = new List<IntPtr>();
 
-            foreach (KeyValuePair<IntPtr, int> pair in regionBeginning)
+            foreach (KeyValuePair<IntPtr, uint> pair in regionBeginning)
             {
                 byte[] memoryBuffer = new byte[pair.Value];
                 if (ReadProcessMemory(targetHandle, pair.Key, memoryBuffer, (uint)pair.Value, out notNecessary))
@@ -178,7 +208,7 @@ namespace dummyHacker
                     //switch (typeSize)
                     //{
                     //    case 1:
-                            
+
                     //        break;
                     //    case 2:
                     //        for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
@@ -244,7 +274,7 @@ namespace dummyHacker
         {
             byte[] compareBuffer = new byte[typeSize];
 
-            for(int i = memoryMemory.Count-1; i >=0; i--)
+            for (int i = memoryMemory.Count - 1; i >= 0; i--)
             {
                 if (ReadProcessMemory(targetHandle, memoryMemory[i], compareBuffer, (uint)typeSize, out notNecessary))
                 {
@@ -253,12 +283,12 @@ namespace dummyHacker
                         bool found = true;
                         for (int j = 0; j < typeSize; j++)
                         {
-                            if (compareBuffer[i + j] != valueToFind[j])
+                            if (compareBuffer[k + j] != valueToFind[j])
                             {
                                 found = false;
                             }
                         }
-                        if (found)
+                        if (!found)
                         {
                             memoryMemory.Remove(memoryMemory[i]);
                         }
@@ -303,19 +333,17 @@ namespace dummyHacker
             }
         }
 
-        public void TestWrite(IntPtr address, int wantedValue)
+        public void TestWrite(IntPtr address, byte[] wantedValue)
         {
-            byte[] wantedBuffer = new byte[4];
-            wantedBuffer = BitConverter.GetBytes(wantedValue);
-            WriteProcessMemory(targetHandle, address, wantedBuffer, 4, out notNecessary);
+            WriteProcessMemory(targetHandle, address, wantedValue, 4, out notNecessary);
         }
 
         public void Reset()
         {
-            targetHandle = IntPtr.Zero;
             minimumAddress = IntPtr.Zero;
             dataGridSource = new List<MyStruct>();
             memoryMemory = new List<IntPtr>();
+            regionBeginning = new Dictionary<IntPtr, uint>();
         }
 
 
@@ -326,6 +354,6 @@ namespace dummyHacker
             AnalyzeRegions();
         }
 
-                     
+
     }
 }

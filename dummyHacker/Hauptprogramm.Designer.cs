@@ -88,6 +88,7 @@
             // 
             // ValueToFindTextBox
             // 
+            this.ValueToFindTextBox.Enabled = false;
             this.ValueToFindTextBox.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.ValueToFindTextBox.Location = new System.Drawing.Point(494, 47);
             this.ValueToFindTextBox.Name = "ValueToFindTextBox";
@@ -197,6 +198,7 @@
             // AutoRefreshcheckBox
             // 
             this.AutoRefreshcheckBox.AutoSize = true;
+            this.AutoRefreshcheckBox.Enabled = false;
             this.AutoRefreshcheckBox.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.AutoRefreshcheckBox.Location = new System.Drawing.Point(12, 83);
             this.AutoRefreshcheckBox.Name = "AutoRefreshcheckBox";
