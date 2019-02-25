@@ -17,6 +17,7 @@ namespace dummyHacker
         MemoryEditor firstTry = new MemoryEditor();
         BindingSource source = new BindingSource();
         int size;
+        byte[] textboxContent;
         string penner;
         string basicValue;
         bool isString = false;
@@ -46,7 +47,8 @@ namespace dummyHacker
         {
             firstTry.ScanSystem();
             firstTry.CreateEntryPoints();
-            firstTry.SearchForValues(size, TextBoxContentAsByteArray(ValueToFindTextBox.Text));
+            textboxContent = TextBoxContentAsByteArray(ValueToFindTextBox.Text);
+            firstTry.SearchForValues(size, textboxContent);
             firstTry.CreateDataGridSource1(penner);
 
             source.DataSource = firstTry.dataGridSource;
@@ -128,11 +130,11 @@ namespace dummyHacker
                 default:
                     size = textboxtext.Length;
                     textboxContent = new byte[textboxtext.Length];
-                    char[] arsch = textboxtext.ToCharArray();
+                    byte[] arsch = System.Text.Encoding.Default.GetBytes(textboxtext);
 
                     for (int i = 0; i < arsch.Length; i++)
                     {
-                        textboxContent[i] = (byte)arsch[i];
+                        textboxContent[i] = arsch[i];
                     }
                     break;
             }
@@ -143,8 +145,7 @@ namespace dummyHacker
         {
             {
                 IntPtr test = new IntPtr(int.Parse(WriteAddressTextBox.Text, System.Globalization.NumberStyles.HexNumber));
-                //int test2 = int.Parse(WriteValueTextBox.Text);
-                firstTry.TestWrite(test, TextBoxContentAsByteArray(WriteValueTextBox.Text));
+                firstTry.TestWrite(test, TextBoxContentAsByteArray(WriteValueTextBox.Text),size);
             }
         }
 
@@ -175,7 +176,7 @@ namespace dummyHacker
             while (Freeze.Checked == true)
             {
                 schreiben.Invoke((Action)(() => schreiben.Enabled = false));
-                firstTry.TestWrite(test, TextBoxContentAsByteArray(WriteValueTextBox.Text));
+                firstTry.TestWrite(test, TextBoxContentAsByteArray(WriteValueTextBox.Text), size);
                 Thread.Sleep(100);
             }
             schreiben.Invoke((Action)(() => schreiben.Enabled = true));

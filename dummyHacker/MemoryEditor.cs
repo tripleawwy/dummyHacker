@@ -38,7 +38,7 @@ namespace dummyHacker
         int _processId = -1;
         readonly long maximum32BitAddress = 0x7fff0000;
         private IntPtr minimumAddress;
-        public Dictionary<IntPtr, uint> regionBeginning;
+        public Dictionary<IntPtr, int> regionBeginning;
         public List<IntPtr> memoryMemory;
         public List<MyStruct> dataGridSource;
 
@@ -105,7 +105,7 @@ namespace dummyHacker
 
         public void NewProcess(int processId)
         {
-            regionBeginning = new Dictionary<IntPtr, uint>();
+            regionBeginning = new Dictionary<IntPtr, int>();
             targetHandle = OpenProcess(QueryInformation | VirtualMemoryRead | VirtualMemoryWrite | VirtualMemoryOperation, false, processId);
             _processId = processId;
         }
@@ -123,11 +123,12 @@ namespace dummyHacker
         public void CreateEntryPoints()
         {
             long helpMinimumAddress = (long)minimumAddress;
+            //int _regionSize;
             MEMORY_BASIC_INFORMATION memoryInfo = new MEMORY_BASIC_INFORMATION();
 
             while (helpMinimumAddress < maximum32BitAddress)
             {
-                
+
                 minimumAddress = new IntPtr(helpMinimumAddress);
                 VirtualQueryEx(targetHandle, minimumAddress, out memoryInfo, (uint)Marshal.SizeOf(memoryInfo));
                 if (memoryInfo.RegionSize < 0) //TODO: prüfen regionsize int oder uint  |  prüfen cast auf long oder int
@@ -145,18 +146,25 @@ namespace dummyHacker
                     //|| memoryInfo.Protect == AllocationProtectEnum.PAGE_READONLY) //not writable
 
                     //others
-                     //memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE //liefert nicht alle writables
+                    //memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE //liefert nicht alle writables
 
                     && memoryInfo.Protect != AllocationProtectEnum.PAGE_WRITECOPY //CopyOnWrite 
                     && (memoryInfo.Type == TypeEnum.MEM_IMAGE || memoryInfo.Type == TypeEnum.MEM_PRIVATE))
                 {
-                        regionBeginning.Add(memoryInfo.BaseAddress, memoryInfo.RegionSize);
+                    //if (regionBeginning.Count != 0 && (regionBeginning.Last().Key + regionBeginning.Last().Value == memoryInfo.BaseAddress))
+                    //{
+                    //    helpMinimumAddress = (uint)memoryInfo.BaseAddress - regionBeginning.Last().Value;
+                    //    _regionSize = regionBeginning.Last().Value + (int)memoryInfo.RegionSize;
+                    //    regionBeginning.Remove(regionBeginning.Last().Key);
+                    //    regionBeginning.Add(new IntPtr(helpMinimumAddress), _regionSize); //todo regionsize berechnen und else ranhängen
+                    //}
+                    //else
+                    //{
+                    regionBeginning.Add(memoryInfo.BaseAddress, (int)memoryInfo.RegionSize);
+                    //}
                 }
-
-
                 helpMinimumAddress = (uint)memoryInfo.BaseAddress + memoryInfo.RegionSize;
             }
-
         }
 
 
@@ -164,7 +172,7 @@ namespace dummyHacker
 
         public void AnalyzeRegions()
         {
-            foreach (KeyValuePair<IntPtr, uint> pair in regionBeginning)
+            foreach (KeyValuePair<IntPtr, int> pair in regionBeginning)
             {
                 byte[] memoryBuffer = new byte[pair.Value];
                 if (ReadProcessMemory(targetHandle, pair.Key, memoryBuffer, (uint)pair.Value, out notNecessary))
@@ -181,17 +189,17 @@ namespace dummyHacker
 
         public void SearchForValues(int typeSize, byte[] valueToFind)
         {
-            //ToDo: das hier ist arsch langsam...
             memoryMemory = new List<IntPtr>();
+            bool found;
 
-            foreach (KeyValuePair<IntPtr, uint> pair in regionBeginning)
+            foreach (KeyValuePair<IntPtr, int> pair in regionBeginning)
             {
                 byte[] memoryBuffer = new byte[pair.Value];
-                if (ReadProcessMemory(targetHandle, pair.Key, memoryBuffer, (uint)pair.Value, out notNecessary))
+                if (ReadProcessMemory(targetHandle, pair.Key, memoryBuffer, (uint)pair.Value, out notNecessary))            //ToDo: das hier ist arsch langsam...
                 {
                     for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
                     {
-                        bool found = true;
+                        found = true;
                         for (int j = 0; j < typeSize; j++)
                         {
                             if (memoryBuffer[i + j] != valueToFind[j])
@@ -273,6 +281,7 @@ namespace dummyHacker
         public void CompareLists(int typeSize, byte[] valueToFind)
         {
             byte[] compareBuffer = new byte[typeSize];
+            bool found;
 
             for (int i = memoryMemory.Count - 1; i >= 0; i--)
             {
@@ -280,7 +289,7 @@ namespace dummyHacker
                 {
                     for (int k = 0; k < compareBuffer.Length - (typeSize - 1); k++)
                     {
-                        bool found = true;
+                        found = true;
                         for (int j = 0; j < typeSize; j++)
                         {
                             if (compareBuffer[k + j] != valueToFind[j])
@@ -333,9 +342,9 @@ namespace dummyHacker
             }
         }
 
-        public void TestWrite(IntPtr address, byte[] wantedValue)
+        public void TestWrite(IntPtr address, byte[] wantedValue, int size)
         {
-            WriteProcessMemory(targetHandle, address, wantedValue, 4, out notNecessary);
+            WriteProcessMemory(targetHandle, address, wantedValue, size, out notNecessary);
         }
 
         public void Reset()
@@ -343,7 +352,7 @@ namespace dummyHacker
             minimumAddress = IntPtr.Zero;
             dataGridSource = new List<MyStruct>();
             memoryMemory = new List<IntPtr>();
-            regionBeginning = new Dictionary<IntPtr, uint>();
+            regionBeginning = new Dictionary<IntPtr, int>();
         }
 
 
