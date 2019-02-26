@@ -48,7 +48,7 @@ namespace dummyHacker
             firstTry.ScanSystem();
             firstTry.CreateEntryPoints();
             textboxContent = TextBoxContentAsByteArray(ValueToFindTextBox.Text);
-            firstTry.SearchForValues(size, textboxContent);
+            firstTry.SearchForValuesInMultipleThreads(size, textboxContent);
             firstTry.CreateDataGridSource1(penner);
 
             source.DataSource = firstTry.dataGridSource;

@@ -39,8 +39,10 @@ namespace dummyHacker
         readonly long maximum32BitAddress = 0x7fff0000;
         private IntPtr minimumAddress;
         public Dictionary<IntPtr, int> regionBeginning;
+        public List<Thread> threadList;
         public List<IntPtr> memoryMemory;
         public List<MyStruct> dataGridSource;
+        public IOrderedEnumerable <KeyValuePair <IntPtr,int> >sortedRegions;
 
         public List<MyStruct> CreateDataGridSource(string valueToFind)
         {
@@ -125,6 +127,7 @@ namespace dummyHacker
             long helpMinimumAddress = (long)minimumAddress;
             //int _regionSize;
             MEMORY_BASIC_INFORMATION memoryInfo = new MEMORY_BASIC_INFORMATION();
+            int _regionSize;
 
             while (helpMinimumAddress < maximum32BitAddress)
             {
@@ -138,33 +141,37 @@ namespace dummyHacker
 
                 if (
                     //writable = not (not writeable)
-                    memoryInfo.Protect != AllocationProtectEnum.PAGE_EXECUTE_READ //not writable
-                    && memoryInfo.Protect != AllocationProtectEnum.PAGE_READONLY //not writable
+                    //memoryInfo.Protect != AllocationProtectEnum.PAGE_EXECUTE_READ //not writable
+                    //&& memoryInfo.Protect != AllocationProtectEnum.PAGE_READONLY //not writable
+                    //&& memoryInfo.Protect != 0 //not writable
+                    //&& memoryInfo.Protect != AllocationProtectEnum.PAGE_GUARDPLUSREADWRITE //not writable
 
                     //readonly
                     //(memoryInfo.Protect == AllocationProtectEnum.PAGE_EXECUTE_READ //not writable
                     //|| memoryInfo.Protect == AllocationProtectEnum.PAGE_READONLY) //not writable
 
-                    //others
-                    //memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE //liefert nicht alle writables
+                    //necessary
+                    memoryInfo.Protect == AllocationProtectEnum.PAGE_READWRITE //
+                    || memoryInfo.Protect == AllocationProtectEnum.PAGE_WRITECOMBINEPLUSREADWRITE
 
-                    && memoryInfo.Protect != AllocationProtectEnum.PAGE_WRITECOPY //CopyOnWrite 
+                    //&& memoryInfo.Protect != AllocationProtectEnum.PAGE_WRITECOPY //CopyOnWrite 
                     && (memoryInfo.Type == TypeEnum.MEM_IMAGE || memoryInfo.Type == TypeEnum.MEM_PRIVATE))
                 {
-                    //if (regionBeginning.Count != 0 && (regionBeginning.Last().Key + regionBeginning.Last().Value == memoryInfo.BaseAddress))
-                    //{
-                    //    helpMinimumAddress = (uint)memoryInfo.BaseAddress - regionBeginning.Last().Value;
-                    //    _regionSize = regionBeginning.Last().Value + (int)memoryInfo.RegionSize;
-                    //    regionBeginning.Remove(regionBeginning.Last().Key);
-                    //    regionBeginning.Add(new IntPtr(helpMinimumAddress), _regionSize); //todo regionsize berechnen und else ranhängen
-                    //}
-                    //else
-                    //{
-                    regionBeginning.Add(memoryInfo.BaseAddress, (int)memoryInfo.RegionSize);
-                    //}
+                    if (regionBeginning.Count != 0 && (regionBeginning.Last().Key + regionBeginning.Last().Value == memoryInfo.BaseAddress))
+                    {
+                        helpMinimumAddress = (uint)memoryInfo.BaseAddress - regionBeginning.Last().Value;
+                        _regionSize = regionBeginning.Last().Value + (int)memoryInfo.RegionSize;
+                        regionBeginning.Remove(regionBeginning.Last().Key);
+                        regionBeginning.Add(new IntPtr(helpMinimumAddress), _regionSize);
+                    }
+                    else
+                    {
+                        regionBeginning.Add(memoryInfo.BaseAddress, (int)memoryInfo.RegionSize);
+                    }
                 }
                 helpMinimumAddress = (uint)memoryInfo.BaseAddress + memoryInfo.RegionSize;
             }
+            //sortedRegions = from entry in regionBeginning orderby entry.Value descending select entry;// sort region descending by region regionsize
         }
 
 
@@ -189,6 +196,7 @@ namespace dummyHacker
 
         public void SearchForValues(int typeSize, byte[] valueToFind)
         {
+            int count = 0;
             memoryMemory = new List<IntPtr>();
             bool found;
 
@@ -212,68 +220,116 @@ namespace dummyHacker
                             memoryMemory.Add(pair.Key + i);
                         }
                     }
+                }
+                else
+                {
+                    count++;
+                }
+            }
+            int egal = count;
+        }
 
-                    //switch (typeSize)
-                    //{
-                    //    case 1:
+        public void SearchForValuesInMultipleThreads(int typeSize, byte[] valueToFind)
+        {
+            threadList = new List<Thread>();
+            memoryMemory = new List<IntPtr>();
 
-                    //        break;
-                    //    case 2:
-                    //        for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
-                    //        {
-                    //            if ((memoryBuffer[i + 1] << 8 
-                    //                | memoryBuffer[i]) == valueToFind)
-                    //            {
-                    //                memoryMemory.Add(pair.Key + i);
-                    //            }
-                    //        }
-                    //        break;
-                    //    case 4:
-                    //        for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
-                    //        {
-                    //            if ((memoryBuffer[i + 3] << 8 
-                    //                | memoryBuffer[i + 2] << 8 
-                    //                | memoryBuffer[i + 1] << 8 
-                    //                | memoryBuffer[i]) == valueToFind)
-                    //            {
-                    //                memoryMemory.Add(pair.Key + i);
-                    //            }
-                    //        }
-                    //        break;
-                    //    case 8:
-                    //        for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
-                    //        {
-                    //            if ((long)(memoryBuffer[i + 7] << 8
-                    //                | memoryBuffer[i + 6] << 8
-                    //                | memoryBuffer[i + 5] << 8
-                    //                | memoryBuffer[i + 4] << 8
-                    //                | memoryBuffer[i + 3] << 8
-                    //                | memoryBuffer[i + 2] << 8
-                    //                | memoryBuffer[i + 1] << 8
-                    //                | memoryBuffer[i]) == valueToFind)
-                    //            {
-                    //                memoryMemory.Add(pair.Key + i);
-                    //            }
-                    //        }
-                    //        break;
-                    //    default:
-                    //        for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
-                    //        {
-                    //            if ((memoryBuffer[i + 7] << 8
-                    //                | memoryBuffer[i + 6] << 8
-                    //                | memoryBuffer[i + 5] << 8
-                    //                | memoryBuffer[i + 4] << 8
-                    //                | memoryBuffer[i + 3] << 8
-                    //                | memoryBuffer[i + 2] << 8
-                    //                | memoryBuffer[i + 1] << 8
-                    //                | memoryBuffer[i]) == valueToFind)
-                    //            {
-                    //                memoryMemory.Add(pair.Key + i);
-                    //            }
-                    //        }
-                    //        break;
+            int threadCount = Environment.ProcessorCount;
+            //int threadCount = 1;
+            Dictionary<IntPtr, int>[]  splittedRegionBeginning = new Dictionary<IntPtr, int>[threadCount];
 
-                    //}
+            for(int i=0;i< splittedRegionBeginning.Count();i++)
+            {
+                splittedRegionBeginning[i] = new Dictionary<IntPtr, int>();
+            }
+
+            for(int i = 0; i < regionBeginning.Count(); i++)
+            {
+                splittedRegionBeginning[i % threadCount].Add(regionBeginning.ElementAt(i).Key, regionBeginning.ElementAt(i).Value);
+            }
+
+            foreach (Dictionary<IntPtr, int> dict in splittedRegionBeginning)
+            {
+                Thread arsch = new Thread(() => TestMethod2(typeSize, valueToFind, dict));
+                arsch.Start();
+                threadList.Add(arsch);
+            }
+
+            foreach (Thread thread in threadList)
+            {
+                thread.Join();
+            }
+        }
+
+        private void TestMethod(int typeSize, byte[] valueToFind, KeyValuePair<IntPtr, int> pair)
+        {
+            bool found;
+            bool done;
+            byte[] memoryBuffer = new byte[pair.Value];
+            if (ReadProcessMemory(targetHandle, pair.Key, memoryBuffer, (uint)pair.Value, out notNecessary))            //ToDo: das hier ist arsch langsam...
+            {
+                for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
+                {
+                    found = true;
+                    for (int j = 0; j < typeSize; j++)
+                    {
+                        if (memoryBuffer[i + j] != valueToFind[j])
+                        {
+                            found = false;
+                        }
+                    }
+                    if (found)
+                    {
+                        done = false;
+
+                        while (!done)
+                        {
+                            Monitor.TryEnter(memoryMemory, ref done);
+                            if (done)
+                            {
+                                memoryMemory.Add(pair.Key + i);
+                                Monitor.Exit(memoryMemory);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void TestMethod2(int typeSize, byte[] valueToFind, Dictionary<IntPtr, int> dict)
+        {
+            foreach (KeyValuePair<IntPtr, int> pair in dict)
+            {
+                bool found;
+                bool done;
+                byte[] memoryBuffer = new byte[pair.Value];
+                if (ReadProcessMemory(targetHandle, pair.Key, memoryBuffer, (uint)pair.Value, out notNecessary))            //ToDo: das hier ist arsch langsam...
+                {
+                    for (int i = 0; i < memoryBuffer.Length - (typeSize - 1); i++)
+                    {
+                        found = true;
+                        for (int j = 0; j < typeSize; j++)
+                        {
+                            if (memoryBuffer[i + j] != valueToFind[j])
+                            {
+                                found = false;
+                            }
+                        }
+                        if (found)
+                        {
+                            done = false;
+
+                            while (!done)
+                            {
+                                Monitor.TryEnter(memoryMemory, ref done);
+                                if (done)
+                                {
+                                    memoryMemory.Add(pair.Key + i);
+                                    Monitor.Exit(memoryMemory);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

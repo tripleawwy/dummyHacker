@@ -62,7 +62,9 @@ namespace DLLImports
             PAGE_WRITECOPY = 0x00000008,
             PAGE_GUARD = 0x00000100,
             PAGE_NOCACHE = 0x00000200,
-            PAGE_WRITECOMBINE = 0x00000400
+            PAGE_WRITECOMBINE = 0x00000400,
+            PAGE_GUARDPLUSREADWRITE = 0x00000104,
+            PAGE_WRITECOMBINEPLUSREADWRITE= 0x00000404
         }
 
         public enum StateEnum : uint

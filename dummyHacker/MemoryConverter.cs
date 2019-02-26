@@ -8,9 +8,9 @@ namespace dummyHacker
 {
     public static class MemoryConverter
     {
-        public static void CreateCharList()
+        public static void Threading()
         {
-            
+
         }
 
     }
