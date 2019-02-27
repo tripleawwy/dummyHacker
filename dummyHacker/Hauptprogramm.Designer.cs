@@ -45,6 +45,7 @@
             this.ResetButton = new System.Windows.Forms.Button();
             this.AutoRefreshcheckBox = new System.Windows.Forms.CheckBox();
             this.AddressFoundLabel = new System.Windows.Forms.Label();
+            this.Collector = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -58,7 +59,7 @@
             this.FirstScanButton.TabIndex = 1;
             this.FirstScanButton.Text = "First Scan";
             this.FirstScanButton.UseVisualStyleBackColor = true;
-            this.FirstScanButton.Click += new System.EventHandler(this.FirstScan);
+            this.FirstScanButton.Click += new System.EventHandler(this.FirstScan_Click);
             // 
             // NextScanButton
             // 
@@ -70,7 +71,7 @@
             this.NextScanButton.TabIndex = 5;
             this.NextScanButton.Text = "Next Scan";
             this.NextScanButton.UseVisualStyleBackColor = true;
-            this.NextScanButton.Click += new System.EventHandler(this.NextScan);
+            this.NextScanButton.Click += new System.EventHandler(this.NextScan_Click);
             // 
             // InputTypeComboBox
             // 
@@ -78,8 +79,7 @@
             this.InputTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.InputTypeComboBox.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.InputTypeComboBox.FormattingEnabled = true;
-            this.InputTypeComboBox.Items.AddRange(new object[] {
-            "asd"});
+           
             this.InputTypeComboBox.Location = new System.Drawing.Point(339, 47);
             this.InputTypeComboBox.Name = "InputTypeComboBox";
             this.InputTypeComboBox.Size = new System.Drawing.Size(121, 21);
@@ -219,6 +219,10 @@
             this.AddressFoundLabel.Text = "AddressCount";
             this.AddressFoundLabel.Visible = false;
             // 
+            // Collector
+            // 
+            this.Collector.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Collector_DoWork);
+            // 
             // Hauptprogramm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -268,5 +272,6 @@
         private System.Windows.Forms.Button ResetButton;
         private System.Windows.Forms.CheckBox AutoRefreshcheckBox;
         private System.Windows.Forms.Label AddressFoundLabel;
+        private System.ComponentModel.BackgroundWorker Collector;
     }
 }

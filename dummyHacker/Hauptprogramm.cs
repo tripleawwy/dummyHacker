@@ -18,7 +18,6 @@ namespace dummyHacker
         BindingSource source = new BindingSource();
         int size;
         byte[] textboxContent;
-        string penner;
         string basicValue;
         bool isString = false;
 
@@ -34,47 +33,61 @@ namespace dummyHacker
         {
             ComboSource();
         }
+
         private void ComboSource()
         {
+            // TODO : InputTypeComboBox.Items.AddRange(new object[] {"das hier"});
             Dictionary<int, string> ValueSizeAndName = new Dictionary<int, string> { { 1, "Byte" }, { 2, "Short" }, { 4, "Int" }, { 8, "Long" }, { 42, "String" } };
             InputTypeComboBox.DataSource = new BindingSource(ValueSizeAndName, null);
             InputTypeComboBox.DisplayMember = "Value";
             InputTypeComboBox.ValueMember = "Key";
-
+            InputTypeComboBox.SelectedIndex = 2;
         }
 
-        private void FirstScan(object sender, EventArgs e)
+        private void FirstScan_Click(object sender, EventArgs e)
         {
             firstTry.ScanSystem();
             firstTry.CreateEntryPoints();
-            textboxContent = TextBoxContentAsByteArray(ValueToFindTextBox.Text);
-            firstTry.SearchForValuesInMultipleThreads(size, textboxContent);
-            firstTry.CreateDataGridSource1(penner);
 
+
+            textboxContent = MemoryConverter.TextBoxContentAsByteArray(ValueToFindTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
+            size = textboxContent.Length;
+
+
+            firstTry.SearchForValuesInMultipleThreads(size, textboxContent);
+            firstTry.CreateDataGridSource1(ValueToFindTextBox.Text);
             source.DataSource = firstTry.dataGridSource;
-            //source.DataSource = firstTry.CreateDataGridSource1(textboxContent);
             dataGridView1.DataSource = source;
+
+
             dataGridView1.Columns[2].Visible = false;
-            //listBox1.DataSource = firstTry.memoryMemory.ConvertAll(delegate (IntPtr i) { return i.ToString("X8"); });
             NextScanButton.Enabled = true;
             ResetButton.Enabled = true;
             AddressFoundLabel.Visible = true;
-            basicValue = penner;
-            AddressFoundLabel.Text = firstTry.memoryMemory.Count.ToString();
+            basicValue = ValueToFindTextBox.Text;
+            AddressFoundLabel.Text = firstTry.dataGridSource.Count.ToString();
             FirstScanButton.Enabled = false;
             InputTypeComboBox.Enabled = false;
+
+
+            Collector.RunWorkerAsync();
         }
 
-        private void NextScan(object sender, EventArgs e)
+        private void NextScan_Click(object sender, EventArgs e)
         {
-            TextBoxContentAsByteArray(ValueToFindTextBox.Text);
-            firstTry.CompareLists(size, TextBoxContentAsByteArray(ValueToFindTextBox.Text));
-            firstTry.CompareDataGridSource(penner, basicValue);
+            textboxContent = MemoryConverter.TextBoxContentAsByteArray(ValueToFindTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
+            size = textboxContent.Length;
+
+
+            firstTry.CompareLists(size, textboxContent);
+            firstTry.CompareDataGridSource(ValueToFindTextBox.Text, basicValue);
             source.DataSource = firstTry.dataGridSource;
-            basicValue = penner;
+            basicValue = ValueToFindTextBox.Text; 
             AutoRefreshcheckBox.Enabled = true;
             dataGridView1.Columns[2].Visible = true;
             AddressFoundLabel.Text = firstTry.memoryMemory.Count.ToString();
+
+            //foolin around
             //listBox1.DataSource = firstTry.memoryMemory.ConvertAll(delegate (IntPtr i) { return i.ToString("X8"); });
         }
 
@@ -86,66 +99,14 @@ namespace dummyHacker
                 isString = true;
             }
         }
-
-        private byte[] TextBoxContentAsByteArray(string textboxtext)
-        {
-            byte[] textboxContent = new byte[0];
-            penner = textboxtext;
-            switch (((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key)
-            {
-                case 1:
-                    if (byte.TryParse(textboxtext, out byte result1))
-                    {
-                        textboxContent = new byte[1] { result1 };
-                    }
-                    break;
-                case 2:
-                    if (short.TryParse(textboxtext, out short result2))
-                    {
-                        textboxContent = new byte[2] { (byte)(result2 & 255), (byte)((result2 >> 8) & 255) };
-                    }
-                    break;
-                case 4:
-                    if (int.TryParse(textboxtext, out int result4))
-                    {
-                        textboxContent = new byte[4] { (byte)(result4 & 255)
-                            , (byte)((result4 >> 8) & 255)
-                            , (byte)((result4 >> 16) & 255)
-                            , (byte)((result4 >> 24) & 255) };
-                    }
-                    break;
-                case 8:
-                    if (long.TryParse(textboxtext, out long result8))
-                    {
-                        textboxContent = new byte[8] { (byte)(result8 & 255)
-                            , (byte)((result8 >> 8) & 255)
-                            , (byte)((result8 >> 16) & 255)
-                            , (byte)((result8 >> 24) & 255)
-                            , (byte)((result8 >> 32) & 255)
-                            , (byte)((result8 >> 40) & 255)
-                            , (byte)((result8 >> 48) & 255)
-                            , (byte)((result8 >> 56) & 255)};
-                    }
-                    break;
-                default:
-                    size = textboxtext.Length;
-                    textboxContent = new byte[textboxtext.Length];
-                    byte[] arsch = System.Text.Encoding.Default.GetBytes(textboxtext);
-
-                    for (int i = 0; i < arsch.Length; i++)
-                    {
-                        textboxContent[i] = arsch[i];
-                    }
-                    break;
-            }
-            return textboxContent;
-        }
+       
 
         private void Schreiben_Click(object sender, EventArgs e)
         {
             {
+                byte[] writeboxContent = MemoryConverter.TextBoxContentAsByteArray(WriteValueTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
                 IntPtr test = new IntPtr(int.Parse(WriteAddressTextBox.Text, System.Globalization.NumberStyles.HexNumber));
-                firstTry.TestWrite(test, TextBoxContentAsByteArray(WriteValueTextBox.Text),size);
+                firstTry.TestWrite(test, writeboxContent ,writeboxContent.Length);
             }
         }
 
@@ -171,12 +132,12 @@ namespace dummyHacker
 
         private void Freezer_DoWork(object sender, DoWorkEventArgs e)
         {
+            byte[] writeboxContent = MemoryConverter.TextBoxContentAsByteArray(WriteValueTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
             IntPtr test = new IntPtr(int.Parse(WriteAddressTextBox.Text, System.Globalization.NumberStyles.HexNumber));
-            int test2 = int.Parse(WriteValueTextBox.Text);
             while (Freeze.Checked == true)
             {
                 schreiben.Invoke((Action)(() => schreiben.Enabled = false));
-                firstTry.TestWrite(test, TextBoxContentAsByteArray(WriteValueTextBox.Text), size);
+                firstTry.TestWrite(test, writeboxContent, writeboxContent.Length);
                 Thread.Sleep(100);
             }
             schreiben.Invoke((Action)(() => schreiben.Enabled = true));
@@ -216,6 +177,11 @@ namespace dummyHacker
                 ValueToFindTextBox.Enabled = true;
             }
             attach_Process.Close();
+        }
+
+        private void Collector_DoWork(object sender, DoWorkEventArgs e)
+        {
+            GC.Collect();
         }
     }
 }

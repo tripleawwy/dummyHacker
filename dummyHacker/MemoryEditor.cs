@@ -24,14 +24,43 @@ namespace dummyHacker
             PreviousValue = _previousValue;
         }
 
+
         public string Address { get; set; }
         public string Value { get; set; }
         public string PreviousValue { get; set; }
 
     }
 
+
+    public struct MyStruct2
+    {
+        public MyStruct2(uint _ptr, List<byte> _value)
+        {
+            Address = _ptr;
+            Value = _value;
+        }
+
+        public uint Address { get; set; }
+        public List<byte> Value { get; set; }
+    }
+
+    public struct MyStructRegion
+    {
+        public MyStructRegion(IntPtr _ptr, int _value)
+        {
+            Address = _ptr;
+            Value = _value;
+        }
+
+        public IntPtr Address { get; set; }
+        public int Value { get; set; }
+    }
+
+
     public class MemoryEditor
     {
+
+        public List<List<MyStruct2>> dataGridSourceWithHistory;
 
         private IntPtr notNecessary = IntPtr.Zero;
         private IntPtr targetHandle = new IntPtr();
@@ -39,13 +68,24 @@ namespace dummyHacker
         readonly long maximum32BitAddress = 0x7fff0000;
         private IntPtr minimumAddress;
         public Dictionary<IntPtr, int> regionBeginning;
+        // TODO : public List<MyStructRegion> regionBeginning;
+
         public List<Thread> threadList;
         public List<IntPtr> memoryMemory;
         public List<MyStruct> dataGridSource;
-        public IOrderedEnumerable <KeyValuePair <IntPtr,int> >sortedRegions;
+        public IOrderedEnumerable <KeyValuePair <IntPtr,int>> sortedRegions;
 
         public List<MyStruct> CreateDataGridSource(string valueToFind)
         {
+            /* TODO : kann man mal drüber nachdenken...
+            dataGridSourceWithHistory.Add(new List<MyStruct2>() );
+            dataGridSourceWithHistory.Add(new List<MyStruct2>() );
+
+            dataGridSourceWithHistory.Last(); //letzte - neuestes
+            dataGridSourceWithHistory.ElementAt(dataGridSourceWithHistory.Count - 2); //vorletze - previous
+            */
+    
+
             List<MyStruct> dataGridSource = new List<MyStruct>();
             foreach (IntPtr address in memoryMemory)
             {
@@ -171,27 +211,8 @@ namespace dummyHacker
                 }
                 helpMinimumAddress = (uint)memoryInfo.BaseAddress + memoryInfo.RegionSize;
             }
-            //sortedRegions = from entry in regionBeginning orderby entry.Value descending select entry;// sort region descending by region regionsize
+            var sortedRegions = from entry in regionBeginning orderby entry.Value descending select entry;// sort region descending by region regionsize
         }
-
-
-
-
-        public void AnalyzeRegions()
-        {
-            foreach (KeyValuePair<IntPtr, int> pair in regionBeginning)
-            {
-                byte[] memoryBuffer = new byte[pair.Value];
-                if (ReadProcessMemory(targetHandle, pair.Key, memoryBuffer, (uint)pair.Value, out notNecessary))
-                {
-                    foreach (byte item in memoryBuffer)
-                    {
-                        //Console.Write(item.ToString("X2") + " ");
-                    }
-                }
-            }
-        }
-
 
 
         public void SearchForValues(int typeSize, byte[] valueToFind)
@@ -235,7 +256,7 @@ namespace dummyHacker
             memoryMemory = new List<IntPtr>();
 
             int threadCount = Environment.ProcessorCount;
-            //int threadCount = 1;
+            //int threadCount = sortedRegions.Count();
             Dictionary<IntPtr, int>[]  splittedRegionBeginning = new Dictionary<IntPtr, int>[threadCount];
 
             for(int i=0;i< splittedRegionBeginning.Count();i++)
@@ -243,9 +264,9 @@ namespace dummyHacker
                 splittedRegionBeginning[i] = new Dictionary<IntPtr, int>();
             }
 
-            for(int i = 0; i < regionBeginning.Count(); i++)
+            for(int i = 0; i < sortedRegions.Count(); i++)
             {
-                splittedRegionBeginning[i % threadCount].Add(regionBeginning.ElementAt(i).Key, regionBeginning.ElementAt(i).Value);
+                splittedRegionBeginning[i % threadCount].Add(sortedRegions.ElementAt(i).Key, sortedRegions.ElementAt(i).Value);
             }
 
             foreach (Dictionary<IntPtr, int> dict in splittedRegionBeginning)
@@ -259,6 +280,8 @@ namespace dummyHacker
             {
                 thread.Join();
             }
+            int egal = 0;
+            
         }
 
         private void TestMethod(int typeSize, byte[] valueToFind, KeyValuePair<IntPtr, int> pair)
@@ -410,15 +433,5 @@ namespace dummyHacker
             memoryMemory = new List<IntPtr>();
             regionBeginning = new Dictionary<IntPtr, int>();
         }
-
-
-        public void ViewMemory()
-        {
-            ScanSystem();
-            CreateEntryPoints();
-            AnalyzeRegions();
-        }
-
-
     }
 }
