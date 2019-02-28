@@ -13,7 +13,7 @@ namespace dummyHacker
 {
     public partial class Hauptprogramm : Form
     {
-
+        MemoryEditorV2 meow;
         MemoryEditor firstTry = new MemoryEditor();
         BindingSource source = new BindingSource();
         int size;
@@ -46,12 +46,20 @@ namespace dummyHacker
 
         private void FirstScan_Click(object sender, EventArgs e)
         {
+            //meow.Value = MemoryConverter.TextBoxContentAsByteArray(ValueToFindTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
+            //meow.Start();
+            //BindingList<ScanStructure> test = new BindingList<ScanStructure>(meow.ScanResult);
+            //dataGridView1.DataSource = test;
+            //AddressFoundLabel.Text = meow.ScanResult.Count().ToString();
+
+
             firstTry.ScanSystem();
             firstTry.CreateEntryPoints();
 
 
             textboxContent = MemoryConverter.TextBoxContentAsByteArray(ValueToFindTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
             size = textboxContent.Length;
+            basicValue = ValueToFindTextBox.Text;
 
 
             firstTry.SearchForValuesInMultipleThreads(size, textboxContent);
@@ -64,7 +72,6 @@ namespace dummyHacker
             NextScanButton.Enabled = true;
             ResetButton.Enabled = true;
             AddressFoundLabel.Visible = true;
-            basicValue = ValueToFindTextBox.Text;
             AddressFoundLabel.Text = firstTry.dataGridSource.Count.ToString();
             FirstScanButton.Enabled = false;
             InputTypeComboBox.Enabled = false;
@@ -82,7 +89,7 @@ namespace dummyHacker
             firstTry.CompareLists(size, textboxContent);
             firstTry.CompareDataGridSource(ValueToFindTextBox.Text, basicValue);
             source.DataSource = firstTry.dataGridSource;
-            basicValue = ValueToFindTextBox.Text; 
+            basicValue = ValueToFindTextBox.Text;
             AutoRefreshcheckBox.Enabled = true;
             dataGridView1.Columns[2].Visible = true;
             AddressFoundLabel.Text = firstTry.memoryMemory.Count.ToString();
@@ -99,14 +106,14 @@ namespace dummyHacker
                 isString = true;
             }
         }
-       
+
 
         private void Schreiben_Click(object sender, EventArgs e)
         {
             {
                 byte[] writeboxContent = MemoryConverter.TextBoxContentAsByteArray(WriteValueTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
                 IntPtr test = new IntPtr(int.Parse(WriteAddressTextBox.Text, System.Globalization.NumberStyles.HexNumber));
-                firstTry.TestWrite(test, writeboxContent ,writeboxContent.Length);
+                firstTry.TestWrite(test, writeboxContent, writeboxContent.Length);
             }
         }
 
@@ -172,6 +179,7 @@ namespace dummyHacker
 
             if (attach_Process.ShowDialog() == DialogResult.OK)
             {
+                //meow = new MemoryEditorV2(attach_Process.GetProcessId());
                 firstTry.NewProcess(attach_Process.GetProcessId());
                 FirstScanButton.Enabled = true;
                 ValueToFindTextBox.Enabled = true;

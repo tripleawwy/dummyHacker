@@ -52,19 +52,19 @@ namespace DLLImports
 
         public enum AllocationProtectEnum : uint
         {
-            PAGE_EXECUTE = 0x00000010,
-            PAGE_EXECUTE_READ = 0x00000020,
-            PAGE_EXECUTE_READWRITE = 0x00000040,
-            PAGE_EXECUTE_WRITECOPY = 0x00000080,
-            PAGE_NOACCESS = 0x00000001,
-            PAGE_READONLY = 0x00000002,
-            PAGE_READWRITE = 0x00000004,
-            PAGE_WRITECOPY = 0x00000008,
-            PAGE_GUARD = 0x00000100,
-            PAGE_NOCACHE = 0x00000200,
-            PAGE_WRITECOMBINE = 0x00000400,
-            PAGE_GUARDPLUSREADWRITE = 0x00000104,
-            PAGE_WRITECOMBINEPLUSREADWRITE= 0x00000404
+            PAGE_EXECUTE = 0x00000010,                     //not writable
+            PAGE_EXECUTE_READ = 0x00000020,                //not writable
+            PAGE_EXECUTE_READWRITE = 0x00000040,           //not writable
+            PAGE_EXECUTE_WRITECOPY = 0x00000080,           //not writable
+            PAGE_NOACCESS = 0x00000001,                    //not writable
+            PAGE_READONLY = 0x00000002,                    //not writable
+            PAGE_READWRITE = 0x00000004,                   //writable
+            PAGE_WRITECOPY = 0x00000008,                   //CopyOnWrite 
+            PAGE_GUARD = 0x00000100,                       //not writable
+            PAGE_NOCACHE = 0x00000200,                     //not writable
+            PAGE_WRITECOMBINE = 0x00000400,                //writable in combination only
+            PAGE_GUARDPLUSREADWRITE = 0x00000104,          //not writable
+            PAGE_WRITECOMBINEPLUSREADWRITE = 0x00000404    //writable
         }
 
         public enum StateEnum : uint

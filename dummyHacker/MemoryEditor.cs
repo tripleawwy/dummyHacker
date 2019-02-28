@@ -165,9 +165,8 @@ namespace dummyHacker
         public void CreateEntryPoints()
         {
             long helpMinimumAddress = (long)minimumAddress;
-            //int _regionSize;
-            MEMORY_BASIC_INFORMATION memoryInfo = new MEMORY_BASIC_INFORMATION();
             int _regionSize;
+            MEMORY_BASIC_INFORMATION memoryInfo = new MEMORY_BASIC_INFORMATION();
 
             while (helpMinimumAddress < maximum32BitAddress)
             {
@@ -211,7 +210,7 @@ namespace dummyHacker
                 }
                 helpMinimumAddress = (uint)memoryInfo.BaseAddress + memoryInfo.RegionSize;
             }
-            var sortedRegions = from entry in regionBeginning orderby entry.Value descending select entry;// sort region descending by region regionsize
+            sortedRegions = from entry in regionBeginning orderby entry.Value descending select entry;// sort region descending by region regionsize
         }
 
 
@@ -280,10 +279,8 @@ namespace dummyHacker
             {
                 thread.Join();
             }
-            int egal = 0;
-            
         }
-
+        
         private void TestMethod(int typeSize, byte[] valueToFind, KeyValuePair<IntPtr, int> pair)
         {
             bool found;

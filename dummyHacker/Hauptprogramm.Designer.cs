@@ -79,7 +79,6 @@
             this.InputTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.InputTypeComboBox.Font = new System.Drawing.Font("Calibri", 8.25F);
             this.InputTypeComboBox.FormattingEnabled = true;
-           
             this.InputTypeComboBox.Location = new System.Drawing.Point(339, 47);
             this.InputTypeComboBox.Name = "InputTypeComboBox";
             this.InputTypeComboBox.Size = new System.Drawing.Size(121, 21);
@@ -103,6 +102,7 @@
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.Size = new System.Drawing.Size(405, 292);
             this.dataGridView1.TabIndex = 9;
+            //this.dataGridView1.
             // 
             // schreiben
             // 

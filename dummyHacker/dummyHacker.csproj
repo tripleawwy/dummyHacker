@@ -65,6 +65,7 @@
       <DependentUpon>Hauptprogramm.cs</DependentUpon>
     </Compile>
     <Compile Include="MemoryConverter.cs" />
+    <Compile Include="MemoryEditorV2.cs" />
     <Compile Include="MemoryEditor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
