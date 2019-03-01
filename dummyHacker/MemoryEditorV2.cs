@@ -33,7 +33,7 @@ namespace dummyHacker
 
     public class MemoryEditorV2
     {
-        public MemoryEditorV2( int processId)
+        public MemoryEditorV2(int processId)
         {
             ProcessId = processId;
             InitializeBasicInformation();
@@ -54,7 +54,7 @@ namespace dummyHacker
 
         private List<Thread> threadList;
         private List<RegionStructure>[] regionLists;
-        private List<ScanStructure> ScanResult;
+        public List<List<ScanStructure>> ScanHistory;
 
 
 
@@ -65,8 +65,8 @@ namespace dummyHacker
             ScanSystem();
 
             notNecessary = IntPtr.Zero;
-            ScanResult = new List<ScanStructure>();
             regionLists = new List<RegionStructure>[Environment.ProcessorCount];
+            ScanHistory = new List<List<ScanStructure>>();
 
             targetHandle = OpenProcess(QueryInformation | VirtualMemoryRead | VirtualMemoryWrite | VirtualMemoryOperation, false, ProcessId);
         }
@@ -90,9 +90,9 @@ namespace dummyHacker
         private void CreateEntryPoints()
         {
             long helpMinimumAddress = (long)minimumAddress;
+            RegionStructure region;
             MEMORY_BASIC_INFORMATION memoryInfo = new MEMORY_BASIC_INFORMATION();
             List<RegionStructure> originalRegionList = new List<RegionStructure>();
-            RegionStructure region;
 
 
             while (helpMinimumAddress < maximum32BitAddress)
@@ -152,10 +152,11 @@ namespace dummyHacker
         }
 
 
-
+        //creates threads and assigns them to work a list
         private void SearchForValuesInMultipleThreads()
         {
             threadList = new List<Thread>();
+
 
             foreach (List<RegionStructure> list in regionLists)
             {
@@ -170,10 +171,18 @@ namespace dummyHacker
             }
         }
 
+        //reads memory for specific regions, compares them to a value and saves them into a history
         private void ReadMemory(List<RegionStructure> list)
         {
+            List<ScanStructure> ScanResult = new List<ScanStructure>();
             byte[] _value = Value;
             int _typesize = TypeSize;
+
+            if (ScanHistory.Count() == 0)
+            {
+                ScanHistory.Add(ScanResult);
+            }
+
             foreach (RegionStructure pair in list)
             {
                 bool found;
@@ -194,21 +203,81 @@ namespace dummyHacker
                         if (found)
                         {
                             done = false;
+                            ScanStructure scan = new ScanStructure(pair.RegionBeginning + i, _value);
 
                             while (!done)
                             {
-                                Monitor.TryEnter(ScanResult, ref done);
+                                Monitor.TryEnter(ScanHistory.Last(), ref done); //waits until no other thread is accessing the list
                                 if (done)
                                 {
-                                    ScanStructure scan = new ScanStructure(pair.RegionBeginning + i, _value);
-                                    ScanResult.Add(scan);
-                                    Monitor.Exit(ScanResult);
+                                    ScanHistory.Last().Add(scan);
+                                    Monitor.Exit(ScanHistory.Last());
                                 }
                             }
                         }
                     }
                 }
             }
+            //ScanHistory.Add(ScanResult);
+        }
+
+        //Compares Lists or just removes no longer valid entries and adds the result to the history
+        public void CompareLists()
+        {
+            //if list is too large, does a complete scan (which is faster than reading with small buffers)
+            int bottleneckLimit = 20_000;
+            if (ScanHistory.Last().Count() >= bottleneckLimit)
+            {
+                //Hilfsliste erstellen
+                SearchForValuesInMultipleThreads();
+
+                byte[] prevValue = (ScanHistory.ElementAt(ScanHistory.Count() - 1)).ElementAt(0).Value;
+
+                //neue Ergebnisliste erstellen, aus vergleich altes Ergebnis und Hilfsliste
+                //TODO: implementiere 2n statt n^2
+                foreach (ScanStructure pair in ScanHistory.Last())
+                {
+                    if (!((ScanHistory.ElementAt(ScanHistory.Count() - 1)).Contains(new ScanStructure(pair.Address, prevValue)))) //TODO das hier ist noch nicht richtig
+                    {
+                        ScanHistory.Last().Remove(pair);
+                    }
+                }
+            }
+
+            //else just compares the values in the previous list by reading small areas(size of the new value) in VRAM
+            else
+            {
+                List<ScanStructure> ScanResult = new List<ScanStructure>();
+                byte[] _value = Value;
+                int _typesize = TypeSize;
+
+                byte[] compareBuffer = new byte[_typesize];
+
+                for (int i = ScanHistory.Last().Count() - 1; i >= 0; i--)
+                {
+                    if (ReadProcessMemory(targetHandle, ScanHistory.Last().ElementAt(i).Address, compareBuffer, (uint)_typesize, out notNecessary))
+                    {
+                        for (int k = 0; k < compareBuffer.Length - (_typesize - 1); k++)
+                        {
+                            for (int j = 0; j < _typesize; j++)
+                            {
+                                if (compareBuffer[k + j] == _value[j])
+                                {
+                                    //ScanStructure scan = new ScanStructure(ScanHistory.Last().ElementAt(i).Address, _value);
+                                    ScanResult.Add(ScanHistory.Last().ElementAt(i));
+                                }
+                            }
+
+                        }
+                    }
+                }
+                ScanHistory.Add(ScanResult);
+            }
+        }
+
+        public void TestWrite(IntPtr address, byte[] wantedValue)
+        {
+            WriteProcessMemory(targetHandle, address, wantedValue, wantedValue.Length, out notNecessary);
         }
     }
 

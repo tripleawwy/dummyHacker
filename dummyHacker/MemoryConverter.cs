@@ -6,8 +6,48 @@ using System.Threading.Tasks;
 
 namespace dummyHacker
 {
+    public struct DatagridSource
+    {
+        public DatagridSource(string address, string value, string previousValue)
+        {
+            Address = address;
+            Value = value;
+            PreviousValue = previousValue;
+        }
+        public string Address { get; set; }
+        public string Value { get; set; }
+        public string PreviousValue { get; set; }
+    }
+
+
     public static class MemoryConverter
     {
+
+        public static List<DatagridSource> ToDatagridSource(List<List<ScanStructure>> scanLists)
+        {
+            List<DatagridSource> ToDatagridSource = new List<DatagridSource>();
+
+
+
+
+
+            foreach (ScanStructure pair in scanLists.Last())
+            {
+                if (scanLists.Count() == 1)
+                {
+                    DatagridSource element = new DatagridSource(pair.Address.ToString("X8"), BitConverter.ToUInt32(pair.Value, 0).ToString(), BitConverter.ToUInt32(scanLists.ElementAt(scanLists.Count() - 1).ElementAt(0).Value, 0).ToString());
+                    ToDatagridSource.Add(element);
+                }
+                else
+                {
+                    DatagridSource element = new DatagridSource(pair.Address.ToString("X8"), BitConverter.ToUInt32(pair.Value, 0).ToString(), "arsch");
+                    ToDatagridSource.Add(element);
+                }
+            }
+            return ToDatagridSource;
+        }
+
+
 
         public static byte[] TextBoxContentAsByteArray(string textboxtext, int InputType)
         {
