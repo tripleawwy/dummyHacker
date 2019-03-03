@@ -48,9 +48,10 @@ namespace dummyHacker
         {
             meow.Value = MemoryConverter.TextBoxContentAsByteArray(ValueToFindTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
             meow.Start();
-            BindingList<DatagridSource> test = new BindingList<DatagridSource>(MemoryConverter.CreateDataGrid( meow.ScanHistory, isString));
-            dataGridView1.DataSource = test;
+            source.DataSource = MemoryConverter.CreateDataGrid(meow.ScanHistory, isString);
+            dataGridView1.DataSource = source;
             AddressFoundLabel.Text = meow.ScanHistory.Last().Count().ToString();
+
 
 
             //firstTry.ScanSystem();
