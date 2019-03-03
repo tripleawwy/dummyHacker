@@ -23,29 +23,60 @@ namespace dummyHacker
     public static class MemoryConverter
     {
 
-        public static List<DatagridSource> ToDatagridSource(List<List<ScanStructure>> scanLists)
+        public static List<DatagridSource> CreateDataGrid(List<List<ScanStructure>> scanLists, bool isString)
         {
-            List<DatagridSource> ToDatagridSource = new List<DatagridSource>();
+            List<DatagridSource> datagrid = new List<DatagridSource>();
+            string _value = "";
+            string _previousValue;
 
 
-
-
+            _value = ByteArrayToString(scanLists, isString, 1);
+            if (scanLists.Count() == 1)
+            {
+                _previousValue = _value;
+            }
+            else
+            {
+                _previousValue = ByteArrayToString(scanLists, isString, 2);
+            }
 
             foreach (ScanStructure pair in scanLists.Last())
             {
-                if (scanLists.Count() == 1)
+                DatagridSource element = new DatagridSource(pair.Address.ToString("X8"), _value, _previousValue);
+                datagrid.Add(element);
+            }
+            return datagrid;
+        }
+
+        private static string ByteArrayToString(List<List<ScanStructure>> scanLists, bool IsString, int listNumber)
+        {
+            string value = "";
+
+            if (!IsString)
+            {
+                switch (scanLists.Last().ElementAt(0).Value.Length)
                 {
-                    DatagridSource element = new DatagridSource(pair.Address.ToString("X8"), BitConverter.ToUInt32(pair.Value, 0).ToString(), BitConverter.ToUInt32(scanLists.ElementAt(scanLists.Count() - 1).ElementAt(0).Value, 0).ToString());
-                    ToDatagridSource.Add(element);
-                }
-                else
-                {
-                    DatagridSource element = new DatagridSource(pair.Address.ToString("X8"), BitConverter.ToUInt32(pair.Value, 0).ToString(), "arsch");
-                    ToDatagridSource.Add(element);
+                    case 1:
+                        value = (scanLists.ElementAt(scanLists.Count() - 1).ElementAt(0).Value[0]).ToString();
+                        break;
+                    case 2:
+                        value = BitConverter.ToInt16(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(0).Value, 0).ToString();
+                        break;
+                    case 4:
+                        value = BitConverter.ToInt32(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(0).Value, 0).ToString();
+                        break;
+                    case 8:
+                        value = BitConverter.ToInt64(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(0).Value, 0).ToString();
+                        break;
                 }
             }
-            return ToDatagridSource;
+            else
+            {
+                value = System.Text.Encoding.Default.GetString(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(0).Value);
+            }
+            return value;
         }
+
 
 
 

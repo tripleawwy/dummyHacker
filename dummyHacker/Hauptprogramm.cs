@@ -48,7 +48,7 @@ namespace dummyHacker
         {
             meow.Value = MemoryConverter.TextBoxContentAsByteArray(ValueToFindTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
             meow.Start();
-            BindingList<DatagridSource> test = new BindingList<DatagridSource>(MemoryConverter.ToDatagridSource( meow.ScanHistory));
+            BindingList<DatagridSource> test = new BindingList<DatagridSource>(MemoryConverter.CreateDataGrid( meow.ScanHistory, isString));
             dataGridView1.DataSource = test;
             AddressFoundLabel.Text = meow.ScanHistory.Last().Count().ToString();
 
@@ -89,7 +89,7 @@ namespace dummyHacker
 
             meow.Value = textboxContent;
             meow.CompareLists();
-            BindingList<DatagridSource> test = new BindingList<DatagridSource>(MemoryConverter.ToDatagridSource(meow.ScanHistory));
+            BindingList<DatagridSource> test = new BindingList<DatagridSource>(MemoryConverter.CreateDataGrid(meow.ScanHistory, isString));
             dataGridView1.DataSource = test;
             AddressFoundLabel.Text = test.Count().ToString();
 

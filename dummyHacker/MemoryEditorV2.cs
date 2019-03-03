@@ -156,6 +156,7 @@ namespace dummyHacker
         private void SearchForValuesInMultipleThreads()
         {
             threadList = new List<Thread>();
+            ScanHistory.Add(new List<ScanStructure>());
 
 
             foreach (List<RegionStructure> list in regionLists)
@@ -174,14 +175,10 @@ namespace dummyHacker
         //reads memory for specific regions, compares them to a value and saves them into a history
         private void ReadMemory(List<RegionStructure> list)
         {
-            List<ScanStructure> ScanResult = new List<ScanStructure>();
             byte[] _value = Value;
             int _typesize = TypeSize;
 
-            if (ScanHistory.Count() == 0)
-            {
-                ScanHistory.Add(ScanResult);
-            }
+
 
             foreach (RegionStructure pair in list)
             {
@@ -218,14 +215,13 @@ namespace dummyHacker
                     }
                 }
             }
-            //ScanHistory.Add(ScanResult);
         }
 
         //Compares Lists or just removes no longer valid entries and adds the result to the history
         public void CompareLists()
         {
             //if list is too large, does a complete scan (which is faster than reading with small buffers)
-            int bottleneckLimit = 20_000;
+            int bottleneckLimit = 200_000_000;
             if (ScanHistory.Last().Count() >= bottleneckLimit)
             {
                 //Hilfsliste erstellen
@@ -237,9 +233,9 @@ namespace dummyHacker
                 //TODO: implementiere 2n statt n^2
                 foreach (ScanStructure pair in ScanHistory.Last())
                 {
-                    if (!((ScanHistory.ElementAt(ScanHistory.Count() - 1)).Contains(new ScanStructure(pair.Address, prevValue)))) //TODO das hier ist noch nicht richtig
+                    if (((ScanHistory.ElementAt(ScanHistory.Count() - 1)).Contains(new ScanStructure(pair.Address, prevValue)))) //TODO das hier ist noch nicht richtig
                     {
-                        ScanHistory.Last().Remove(pair);
+                        ScanHistory.Last().Add(pair);
                     }
                 }
             }
@@ -250,6 +246,7 @@ namespace dummyHacker
                 List<ScanStructure> ScanResult = new List<ScanStructure>();
                 byte[] _value = Value;
                 int _typesize = TypeSize;
+                bool found;
 
                 byte[] compareBuffer = new byte[_typesize];
 
@@ -259,15 +256,19 @@ namespace dummyHacker
                     {
                         for (int k = 0; k < compareBuffer.Length - (_typesize - 1); k++)
                         {
+                            found = true;
                             for (int j = 0; j < _typesize; j++)
                             {
-                                if (compareBuffer[k + j] == _value[j])
+                                if (compareBuffer[k + j] != _value[j])
                                 {
-                                    //ScanStructure scan = new ScanStructure(ScanHistory.Last().ElementAt(i).Address, _value);
-                                    ScanResult.Add(ScanHistory.Last().ElementAt(i));
+                                    found = false;
+                                }
+                                if (found)
+                                {
+                                    ScanResult.Add(new ScanStructure(ScanHistory.Last().ElementAt(i).Address, _value));
+                                    found = false;
                                 }
                             }
-
                         }
                     }
                 }
