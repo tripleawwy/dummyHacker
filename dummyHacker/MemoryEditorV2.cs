@@ -9,7 +9,7 @@ using static DLLImports.Kernel32DLL.ProcessAccessFlags;
 
 namespace dummyHacker
 {
-    public struct ScanStructure
+    public struct ScanStructure : IComparable<ScanStructure>
     {
         public ScanStructure(IntPtr ptr, byte[] value)
         {
@@ -18,6 +18,11 @@ namespace dummyHacker
         }
         public IntPtr Address { get; set; }
         public byte[] Value { get; set; }
+
+        public int CompareTo(ScanStructure other)
+        {
+            return ((uint)this.Address).CompareTo((uint)other.Address);
+        }
     }
 
     public struct RegionStructure
@@ -42,6 +47,8 @@ namespace dummyHacker
         public byte[] Value { get; set; }
         public int TypeSize => Value.Length;
         public int ProcessId { get; set; }
+        public bool IsString { get; set; }
+        public List<DatagridSource> Output;
 
 
 
@@ -54,7 +61,7 @@ namespace dummyHacker
 
         private List<Thread> threadList;
         private List<RegionStructure>[] regionLists;
-        public List<List<ScanStructure>> ScanHistory;
+        private List<List<ScanStructure>> ScanHistory;
 
 
 
@@ -170,6 +177,13 @@ namespace dummyHacker
             {
                 thread.Join();
             }
+
+            if (ScanHistory.Last().Count<=10_000)
+            {
+                ScanHistory.Last().Sort();
+            }
+
+            Output = MemoryConverter.CreateDataGrid(ScanHistory, IsString);
         }
 
         //reads memory for specific regions, compares them to a value and saves them into a history
@@ -177,8 +191,6 @@ namespace dummyHacker
         {
             byte[] _value = Value;
             int _typesize = TypeSize;
-
-
 
             foreach (RegionStructure pair in list)
             {
@@ -217,68 +229,78 @@ namespace dummyHacker
             }
         }
 
-        //Compares Lists or just removes no longer valid entries and adds the result to the history
+        //Compares Lists and removes no longer valid entries and adds the result to the history
         public void CompareLists()
         {
-            //if list is too large, does a complete scan (which is faster than reading with small buffers)
-            int bottleneckLimit = 200_000_000;
-            if (ScanHistory.Last().Count() >= bottleneckLimit)
+            //just compares the values in the previous list by reading small areas(size of the new value) in VRAM
+            List<ScanStructure> ScanResult = new List<ScanStructure>();
+            byte[] _value = Value;
+            int _typesize = TypeSize;
+            bool found;
+
+            byte[] compareBuffer = new byte[_typesize];
+
+            for (int i = ScanHistory.Last().Count() - 1; i >= 0; i--)
             {
-                //Hilfsliste erstellen
-                SearchForValuesInMultipleThreads();
-
-                byte[] prevValue = (ScanHistory.ElementAt(ScanHistory.Count() - 1)).ElementAt(0).Value;
-
-                //neue Ergebnisliste erstellen, aus vergleich altes Ergebnis und Hilfsliste
-                //TODO: implementiere 2n statt n^2
-                foreach (ScanStructure pair in ScanHistory.Last())
+                if (ReadProcessMemory(targetHandle, ScanHistory.Last().ElementAt(i).Address, compareBuffer, (uint)_typesize, out notNecessary))
                 {
-                    if (((ScanHistory.ElementAt(ScanHistory.Count() - 1)).Contains(new ScanStructure(pair.Address, prevValue)))) //TODO das hier ist noch nicht richtig
+                    for (int k = 0; k < compareBuffer.Length - (_typesize - 1); k++)
                     {
-                        ScanHistory.Last().Add(pair);
-                    }
-                }
-            }
-
-            //else just compares the values in the previous list by reading small areas(size of the new value) in VRAM
-            else
-            {
-                List<ScanStructure> ScanResult = new List<ScanStructure>();
-                byte[] _value = Value;
-                int _typesize = TypeSize;
-                bool found;
-
-                byte[] compareBuffer = new byte[_typesize];
-
-                for (int i = ScanHistory.Last().Count() - 1; i >= 0; i--)
-                {
-                    if (ReadProcessMemory(targetHandle, ScanHistory.Last().ElementAt(i).Address, compareBuffer, (uint)_typesize, out notNecessary))
-                    {
-                        for (int k = 0; k < compareBuffer.Length - (_typesize - 1); k++)
+                        found = true;
+                        for (int j = 0; j < _typesize; j++)
                         {
-                            found = true;
-                            for (int j = 0; j < _typesize; j++)
+                            if (compareBuffer[k + j] != _value[j])
                             {
-                                if (compareBuffer[k + j] != _value[j])
-                                {
-                                    found = false;
-                                }
-                                if (found)
-                                {
-                                    ScanResult.Add(new ScanStructure(ScanHistory.Last().ElementAt(i).Address, _value));
-                                    found = false;
-                                }
+                                found = false;
+                            }
+                            if (found)
+                            {
+                                ScanResult.Add(new ScanStructure(ScanHistory.Last().ElementAt(i).Address, _value));
+                                found = false;
                             }
                         }
                     }
                 }
-                ScanHistory.Add(ScanResult);
             }
+            if (ScanResult.Count()<=10_000)
+            {
+                ScanResult.Sort();
+            }
+            ScanHistory.Add(ScanResult);
+            Output = MemoryConverter.CreateDataGrid(ScanHistory, IsString);
         }
 
+
+        //reads changes in memory for addresses in the list and updates these values
+        public void RefreshList()
+        {
+            List<ScanStructure> arsch = new List<ScanStructure>();
+
+
+            foreach (ScanStructure item in ScanHistory.Last())
+            {
+                byte[] refresh = new byte[item.Value.Length];
+                ReadProcessMemory(targetHandle, item.Address, refresh, (uint)item.Value.Length, out notNecessary);
+                arsch.Add(new ScanStructure(item.Address, refresh));
+            }
+            ScanHistory.Add(arsch);
+            Output = MemoryConverter.RefreshDatagrid(ScanHistory, IsString);
+            ScanHistory.Remove(ScanHistory.Last());
+        }
+
+        //writes values to a specific address in memory
         public void TestWrite(IntPtr address, byte[] wantedValue)
         {
             WriteProcessMemory(targetHandle, address, wantedValue, wantedValue.Length, out notNecessary);
+        }
+
+        //sets all necessary variables to status quo in order to do a new scan
+        public void Reset()
+        {
+            minimumAddress = IntPtr.Zero;
+            ScanHistory = new List<List<ScanStructure>>();
+            Output = new List<DatagridSource>();
+            regionLists = new List<RegionStructure>[Environment.ProcessorCount];
         }
     }
 

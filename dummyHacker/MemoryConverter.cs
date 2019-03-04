@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace dummyHacker
 {
-    public struct DatagridSource
+    public struct DatagridSource : IComparable<DatagridSource>
     {
         public DatagridSource(string address, string value, string previousValue)
         {
@@ -17,6 +17,11 @@ namespace dummyHacker
         public string Address { get; set; }
         public string Value { get; set; }
         public string PreviousValue { get; set; }
+
+        public int CompareTo(DatagridSource other)
+        {
+            return this.Address.CompareTo(other.Address);
+        }
     }
 
 
@@ -30,27 +35,51 @@ namespace dummyHacker
             string _previousValue;
 
 
-            _value = ByteArrayToString(scanLists, isString, 1);
-            if (scanLists.Count() == 1)
+
+            if (scanLists.Last().Count() == 0)
             {
-                _previousValue = _value;
+                datagrid.Add(new DatagridSource("no results found", "no results found", "no results found"));
+                return datagrid;
             }
             else
             {
-                _previousValue = ByteArrayToString(scanLists, isString, 2);
+                _value = ByteArrayToString(scanLists, isString, 1);
+                if (scanLists.Count() == 1)
+                {
+                    _previousValue = _value;
+                }
+                else
+                {
+                    _previousValue = ByteArrayToString(scanLists, isString, 2);
+                }
+
+                foreach (ScanStructure pair in scanLists.Last())
+                {
+                    DatagridSource element = new DatagridSource(pair.Address.ToString("X8"), _value, _previousValue);
+                    datagrid.Add(element);
+                }
+                return datagrid;
             }
+        }
+
+        public static List<DatagridSource> RefreshDatagrid(List<List<ScanStructure>> scanLists, bool isString)
+        {
+            List<DatagridSource> output = new List<DatagridSource>();
+            string _previousValue = ByteArrayToString(scanLists, isString, 2);
 
             foreach (ScanStructure pair in scanLists.Last())
             {
-                DatagridSource element = new DatagridSource(pair.Address.ToString("X8"), _value, _previousValue);
-                datagrid.Add(element);
+                output.Add(new DatagridSource(pair.Address.ToString("X8"), ByteArrayToString(scanLists, isString, 1), _previousValue));
             }
-            return datagrid;
+
+            return output;
         }
+
 
         private static string ByteArrayToString(List<List<ScanStructure>> scanLists, bool IsString, int listNumber)
         {
             string value = "";
+
 
             if (!IsString)
             {
@@ -80,7 +109,7 @@ namespace dummyHacker
 
 
 
-        public static byte[] TextBoxContentAsByteArray(string textboxtext, int InputType)
+        public static byte[] TextBoxContentToByteArray(string textboxtext, int InputType)
         {
             byte[] textboxContent = new byte[0];
             switch (InputType)
