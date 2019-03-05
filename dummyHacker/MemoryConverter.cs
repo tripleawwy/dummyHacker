@@ -43,14 +43,14 @@ namespace dummyHacker
             }
             else
             {
-                _value = ByteArrayToString(scanLists, isString, 1);
+                _value = ByteArrayToString(scanLists, isString,0, 1);
                 if (scanLists.Count() == 1)
                 {
                     _previousValue = _value;
                 }
                 else
                 {
-                    _previousValue = ByteArrayToString(scanLists, isString, 2);
+                    _previousValue = ByteArrayToString(scanLists, isString,0, 2);
                 }
 
                 foreach (ScanStructure pair in scanLists.Last())
@@ -65,18 +65,20 @@ namespace dummyHacker
         public static List<DatagridSource> RefreshDatagrid(List<List<ScanStructure>> scanLists, bool isString)
         {
             List<DatagridSource> output = new List<DatagridSource>();
-            string _previousValue = ByteArrayToString(scanLists, isString, 2);
+            string _previousValue = ByteArrayToString(scanLists, isString,0, 2);
 
+            int i = 0;
             foreach (ScanStructure pair in scanLists.Last())
             {
-                output.Add(new DatagridSource(pair.Address.ToString("X8"), ByteArrayToString(scanLists, isString, 1), _previousValue));
+                output.Add(new DatagridSource(pair.Address.ToString("X8"), ByteArrayToString(scanLists, isString,i, 1), _previousValue));
+                i++;
             }
 
             return output;
         }
 
 
-        private static string ByteArrayToString(List<List<ScanStructure>> scanLists, bool IsString, int listNumber)
+        private static string ByteArrayToString(List<List<ScanStructure>> scanLists, bool IsString,int controlVariable, int listNumber)
         {
             string value = "";
 
@@ -89,13 +91,13 @@ namespace dummyHacker
                         value = (scanLists.ElementAt(scanLists.Count() - 1).ElementAt(0).Value[0]).ToString();
                         break;
                     case 2:
-                        value = BitConverter.ToInt16(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(0).Value, 0).ToString();
+                        value = BitConverter.ToInt16(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(controlVariable).Value, 0).ToString();
                         break;
                     case 4:
-                        value = BitConverter.ToInt32(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(0).Value, 0).ToString();
+                        value = BitConverter.ToInt32(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(controlVariable).Value, 0).ToString();
                         break;
                     case 8:
-                        value = BitConverter.ToInt64(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(0).Value, 0).ToString();
+                        value = BitConverter.ToInt64(scanLists.ElementAt(scanLists.Count() - listNumber).ElementAt(controlVariable).Value, 0).ToString();
                         break;
                 }
             }

@@ -80,7 +80,8 @@ namespace dummyHacker
             textboxContent = MemoryConverter.TextBoxContentToByteArray(ValueToFindTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
             meow.Value = textboxContent;
             meow.CompareLists();
-
+            
+            
 
             source.DataSource = meow.Output;
             dataGridView1.DataSource = source;
@@ -110,10 +111,13 @@ namespace dummyHacker
 
         private void Refresher_DoWork(object sender, DoWorkEventArgs e)
         {
+            int backup;
             while (AutoRefreshcheckBox.Checked == true)
             {
+                backup = backup = dataGridView1.FirstDisplayedCell.RowIndex;
                 meow.RefreshList();
                 dataGridView1.Invoke((Action)(() => source.DataSource = meow.Output));
+                dataGridView1.Invoke((Action)(() => dataGridView1.FirstDisplayedScrollingRowIndex = backup));
                 Thread.Sleep(500);
             }
         }

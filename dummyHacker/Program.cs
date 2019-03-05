@@ -20,7 +20,7 @@ namespace dummyHacker
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Hauptprogramm());            
+            Application.Run(new Form1());            
         }
     }
 }

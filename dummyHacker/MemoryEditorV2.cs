@@ -294,7 +294,7 @@ namespace dummyHacker
             WriteProcessMemory(targetHandle, address, wantedValue, wantedValue.Length, out notNecessary);
         }
 
-        //sets all necessary variables to status quo in order to do a new scan
+        //sets all necessary variables to status quo ante in order to do a new scan
         public void Reset()
         {
             minimumAddress = IntPtr.Zero;
