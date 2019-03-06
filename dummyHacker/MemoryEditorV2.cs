@@ -52,8 +52,8 @@ namespace dummyHacker
 
 
 
-        private IntPtr targetHandle;
-        private IntPtr notNecessary;
+        public IntPtr targetHandle;
+        public IntPtr notNecessary;
         private long maximum32BitAddress;
         private IntPtr minimumAddress;
 
@@ -67,7 +67,7 @@ namespace dummyHacker
 
 
         //fills MemoryEditorV2 with basic information such as the TargetHandle, MinimumApplicationAddress and asks for rights to read memoryRegions
-        private void InitializeBasicInformation()
+        public void InitializeBasicInformation()
         {
             ScanSystem();
 
