@@ -13,135 +13,99 @@ namespace dummyHacker
 {
     public partial class Form1 : Form
     {
-
-        BindingSource source = new BindingSource();
-        int backup;
-        int helperscrollindex = 15;
-        int baseaddress= -15;
-
-        int datacolumnCount = 16;
-        int datarowCount = 50;
-
-
+        int helper = 0;
+        
         public Form1()
         {
             InitializeComponent();
+            HelpInitialize();
         }
 
-        public DataTable Bla()
+        private void HelpInitialize()
+        {
+            AddRows(10);
+            vScrollBar1.Maximum = dataGridView2.RowCount;
+
+
+        }
+
+        public void AddRows(int rowCount)
+        {
+            for (int i = 0; i < rowCount; i++)
+            {
+                dataGridView2.Rows.Insert(i, Penner());
+                dataGridView2.Rows[i].HeaderCell.Value = (i * dataGridView2.ColumnCount).ToString("X8");
+            }
+            helper += rowCount;
+        }
+
+
+
+        public void ChangeContentPositive(int rowCount)
+        {
+            for (int i = 0; i < rowCount; i++)
+            {
+                dataGridView2.Rows[i].SetValues(Penner());
+                dataGridView2.Rows[i].HeaderCell.Value = ((helper +i) * dataGridView2.ColumnCount).ToString("X8");
+            }
+            helper += rowCount;
+        }
+
+        public void ChangeContentNegative(int rowCount)
+        {
+            helper -= rowCount;
+            for (int i = 0; i < rowCount; i++)
+            {
+                dataGridView2.Rows[i].SetValues(Penner());
+                dataGridView2.Rows[i].HeaderCell.Value = ((helper + i) * dataGridView2.ColumnCount).ToString("X8");
+            }
+        }
+
+        public void DeleteRows(int rowCount)
         {
 
+        }
 
-            DataTable meineTabelle = new DataTable();
+        public string[] Penner()
+        {
+            string[] penner = new string[dataGridView2.ColumnCount];
 
-            for (int i = 0; i < datacolumnCount; i++)
+            for (int i = 0; i < dataGridView2.ColumnCount; i++)
             {
-                meineTabelle.Columns.Add(new DataColumn(i.ToString("X"), typeof(string)));
+                penner[i] = i.ToString("X2");
             }
-
-            for (int i = baseaddress; i < baseaddress + datarowCount; i++)
-            {
-
-                DataRow row = meineTabelle.NewRow();
-                row[0] = (i * datacolumnCount).ToString();
-                //row[0] = 255;
-                meineTabelle.Rows.Add(row);
-            }
-
-            return meineTabelle;
+            return penner;
         }
 
 
+        private void vScrollBar1_Scroll(object sender, ScrollEventArgs e)
+        {
+            ChangeContentPositive(dataGridView2.RowCount);
+            //dataGridView2.FirstDisplayedScrollingRowIndex = e.NewValue;
 
+            //else
+            //{
+            //    dataGridView2.FirstDisplayedScrollingRowIndex = e.NewValue;
+            //    ChangeContentNegative(dataGridView2.RowCount);
+            //}
+
+        }
+
+
+        private void dataGridView2_Scroll(object sender, ScrollEventArgs e)
+        {
+            //vScrollBar1.Value = e.NewValue;
+        }
+
+
+        private void dataGridView2_Click(object sender, EventArgs e)
+        {
+            vScrollBar1.Focus();
+        }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            DataTable arsch = Bla();
-            source.DataSource = arsch;
-            dataGridView1.DataSource = source;
-            RowTestWriter();
-            dataGridView1.FirstDisplayedScrollingRowIndex = helperscrollindex;
-        }
-
-        private void RowTestWriter()
-        {
-            int i = baseaddress;
-            foreach (DataGridViewRow item in dataGridView1.Rows)
-            {
-                item.HeaderCell.Value = (i * datacolumnCount).ToString("X8");
-                i++;
-
-            }
-        }
-
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
-        {
-            while (checkBox1.Checked == true)
-            {
-                //backup = dataGridView1.FirstDisplayedCell.RowIndex;
-
-
-                //dataGridView1.Invoke((Action)(() => dataGridView1.DataSource = Bla()));
-
-
-                //dataGridView1.Invoke((Action)(() => dataGridView1.FirstDisplayedScrollingRowIndex = backup));
-
-
-
-                Bla();
-                Thread.Sleep(500);
-            }
-        }
-
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox1.Checked == true)
-            {
-                backgroundWorker1.RunWorkerAsync();
-            }
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            source.DataSource = Bla();
-            dataGridView1.DataSource = source;
-
-
-            //backup = dataGridView1.FirstDisplayedCell.RowIndex;
-
-            //DataTable arsch = Bla();
-            //source.DataSource = arsch;
-            //dataGridView1.DataSource = source;
-
-
-            ////dataGridView1.CurrentCell = dataGridView1.Rows[backup].Cells[0];
-            //dataGridView1.FirstDisplayedScrollingRowIndex = backup;
-        }
-
-        protected override void OnScroll(ScrollEventArgs se)
-        {
-            base.OnScroll(se);
-
-        }
-
-        private void dataGridView1_Scroll(object sender, ScrollEventArgs e)
-        {
-            if (dataGridView1.FirstDisplayedScrollingRowIndex < helperscrollindex)
-            {
-                baseaddress -= 10;
-
-            }
-            if (dataGridView1.FirstDisplayedScrollingRowIndex > helperscrollindex)
-            {
-                baseaddress += 10;
-            }
-            //dataGridView1.FirstDisplayedScrollingRowIndex = helperscrollindex;
-
-
-            //dataGridView1.DataSource = Bla();
-
-
-            RowTestWriter();
+            ChangeContentPositive(dataGridView2.RowCount);
         }
     }
 }
