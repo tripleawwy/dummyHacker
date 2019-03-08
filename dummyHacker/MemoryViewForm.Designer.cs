@@ -1,9 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Windows.Forms;
 
 namespace dummyHacker
 {
-    partial class Form1
+    partial class MemoryViewForm
     {
         /// <summary>
         /// Required designer variable.
@@ -48,10 +49,11 @@ namespace dummyHacker
             this.Column14 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column15 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column16 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
             this.button1 = new System.Windows.Forms.Button();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
+            this.Counter = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             this.SuspendLayout();
             // 
@@ -85,6 +87,7 @@ namespace dummyHacker
             this.dataGridView2.Size = new System.Drawing.Size(708, 268);
             this.dataGridView2.TabIndex = 4;
             this.dataGridView2.Click += new System.EventHandler(this.dataGridView2_Click);
+            this.dataGridView2.MouseHover += new System.EventHandler(this.dataGridView2_MouseHover);
             // 
             // Column1
             // 
@@ -198,15 +201,6 @@ namespace dummyHacker
             this.Column16.ReadOnly = true;
             this.Column16.Width = 30;
             // 
-            // vScrollBar1
-            // 
-            this.vScrollBar1.LargeChange = 1;
-            this.vScrollBar1.Location = new System.Drawing.Point(736, 91);
-            this.vScrollBar1.Name = "vScrollBar1";
-            this.vScrollBar1.Size = new System.Drawing.Size(40, 268);
-            this.vScrollBar1.TabIndex = 5;
-            this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
-            // 
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(145, 27);
@@ -232,7 +226,21 @@ namespace dummyHacker
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
-            // Form1
+            // vScrollBar1
+            // 
+            this.vScrollBar1.LargeChange = 320;
+            this.vScrollBar1.Location = new System.Drawing.Point(736, 91);
+            this.vScrollBar1.Maximum = 50000;
+            this.vScrollBar1.Name = "vScrollBar1";
+            this.vScrollBar1.Size = new System.Drawing.Size(40, 268);
+            this.vScrollBar1.TabIndex = 5;
+            this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
+            // 
+            // Counter
+            // 
+            this.Counter.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Counter_DoWork);
+            // 
+            // MemoryViewForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -241,7 +249,7 @@ namespace dummyHacker
             this.Controls.Add(this.button1);
             this.Controls.Add(this.vScrollBar1);
             this.Controls.Add(this.dataGridView2);
-            this.Name = "Form1";
+            this.Name = "MemoryViewForm";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
             this.ResumeLayout(false);
@@ -249,10 +257,7 @@ namespace dummyHacker
 
         }
 
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+
 
         #endregion
         private System.Windows.Forms.DataGridView dataGridView2;
@@ -276,5 +281,6 @@ namespace dummyHacker
         private System.Windows.Forms.DataGridViewTextBoxColumn Column16;
         private BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.CheckBox checkBox1;
+        private BackgroundWorker Counter;
     }
 }

@@ -46,6 +46,7 @@
             this.AutoRefreshcheckBox = new System.Windows.Forms.CheckBox();
             this.AddressFoundLabel = new System.Windows.Forms.Label();
             this.Collector = new System.ComponentModel.BackgroundWorker();
+            this.MemoryViewButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -225,11 +226,23 @@
             // 
             this.Collector.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Collector_DoWork);
             // 
+            // MemoryViewButton
+            // 
+            this.MemoryViewButton.Font = new System.Drawing.Font("Calibri", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MemoryViewButton.Location = new System.Drawing.Point(12, 404);
+            this.MemoryViewButton.Name = "MemoryViewButton";
+            this.MemoryViewButton.Size = new System.Drawing.Size(135, 23);
+            this.MemoryViewButton.TabIndex = 21;
+            this.MemoryViewButton.Text = "MemoryView";
+            this.MemoryViewButton.UseVisualStyleBackColor = true;
+            this.MemoryViewButton.Click += new System.EventHandler(this.MemoryViewButton_Click);
+            // 
             // Hauptprogramm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.MemoryViewButton);
             this.Controls.Add(this.AddressFoundLabel);
             this.Controls.Add(this.AutoRefreshcheckBox);
             this.Controls.Add(this.ResetButton);
@@ -275,5 +288,6 @@
         private System.Windows.Forms.CheckBox AutoRefreshcheckBox;
         private System.Windows.Forms.Label AddressFoundLabel;
         private System.ComponentModel.BackgroundWorker Collector;
+        private System.Windows.Forms.Button MemoryViewButton;
     }
 }

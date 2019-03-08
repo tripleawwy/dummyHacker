@@ -80,8 +80,8 @@ namespace dummyHacker
             textboxContent = MemoryConverter.TextBoxContentToByteArray(ValueToFindTextBox.Text, ((KeyValuePair<int, string>)InputTypeComboBox.SelectedItem).Key);
             meow.Value = textboxContent;
             meow.CompareLists();
-            
-            
+
+
 
             source.DataSource = meow.Output;
             dataGridView1.DataSource = source;
@@ -161,7 +161,7 @@ namespace dummyHacker
                 ResetButton.Enabled = false;
                 dataGridRefresher.RunWorkerAsync();
             }
-            if (AutoRefreshcheckBox.Checked==false)
+            if (AutoRefreshcheckBox.Checked == false)
             {
                 ResetButton.Enabled = true;
             }
@@ -193,5 +193,16 @@ namespace dummyHacker
         {
             GC.Collect();
         }
+
+        private void MemoryViewButton_Click(object sender, EventArgs e)
+        {
+            //string arsch = dataGridView1.CurrentRow.Cells[0].Value.ToString();
+            //int arsch = int.Parse(dataGridView1.CurrentRow.Cells[0].Value.ToString(), System.Globalization.NumberStyles.HexNumber);
+
+            int arsch =(int)meow.ScanHistory.Last().ElementAt(dataGridView1.CurrentRow.Index).Address;
+            MemoryViewForm memoryView = new MemoryViewForm(meow, arsch);
+            memoryView.ShowDialog();
+        }
+
     }
 }

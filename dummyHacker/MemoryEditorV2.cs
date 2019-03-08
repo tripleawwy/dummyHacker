@@ -54,14 +54,13 @@ namespace dummyHacker
 
         public IntPtr targetHandle;
         public IntPtr notNecessary;
-        private long maximum32BitAddress;
-        private IntPtr minimumAddress;
+        public long maximum32BitAddress;
+        public IntPtr minimumAddress;
 
 
 
-        private List<Thread> threadList;
-        private List<RegionStructure>[] regionLists;
-        private List<List<ScanStructure>> ScanHistory;
+        public List<RegionStructure>[] regionLists;
+        public List<List<ScanStructure>> ScanHistory;
 
 
 
@@ -162,7 +161,7 @@ namespace dummyHacker
         //creates threads and assigns them to work a list
         private void SearchForValuesInMultipleThreads()
         {
-            threadList = new List<Thread>();
+            List<Thread> threadList = new List<Thread>();
             ScanHistory.Add(new List<ScanStructure>());
 
 

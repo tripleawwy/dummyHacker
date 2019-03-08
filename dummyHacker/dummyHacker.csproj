@@ -58,11 +58,11 @@
     <Compile Include="Attach Process.Designer.cs">
       <DependentUpon>Attach Process.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form1.cs">
+    <Compile Include="MemoryViewForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="MemoryViewForm.Designer.cs">
+      <DependentUpon>MemoryViewForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Hauptprogramm.cs">
       <SubType>Form</SubType>
@@ -83,8 +83,8 @@
     <EmbeddedResource Include="Attach Process.resx">
       <DependentUpon>Attach Process.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="MemoryViewForm.resx">
+      <DependentUpon>MemoryViewForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Hauptprogramm.resx">
       <DependentUpon>Hauptprogramm.cs</DependentUpon>
