@@ -199,9 +199,13 @@ namespace dummyHacker
             //string arsch = dataGridView1.CurrentRow.Cells[0].Value.ToString();
             //int arsch = int.Parse(dataGridView1.CurrentRow.Cells[0].Value.ToString(), System.Globalization.NumberStyles.HexNumber);
 
-            int arsch =(int)meow.ScanHistory.Last().ElementAt(dataGridView1.CurrentRow.Index).Address;
-            MemoryViewForm memoryView = new MemoryViewForm(meow, arsch);
+            int addressInMemory =(int)meow.ScanHistory.Last().ElementAt(dataGridView1.CurrentRow.Index).Address;
+            MemoryViewForm memoryView = new MemoryViewForm(meow, addressInMemory);
             memoryView.ShowDialog();
+            if (memoryView.DialogResult == DialogResult.OK)
+            {
+                memoryView.Close();
+            }
         }
 
     }

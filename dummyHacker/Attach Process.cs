@@ -16,7 +16,6 @@ namespace dummyHacker
         public AttachProcess()
         {
             InitializeComponent();
-
         }
 
         private void Attach_Process_Load(object sender, EventArgs e)
@@ -44,13 +43,7 @@ namespace dummyHacker
 
         private void AcceptProcessButton_Click(object sender, EventArgs e)
         {
-            //hier hat user entschieden welcher prozess
-            //GetProcessId();
             this.DialogResult = DialogResult.OK;
-
-            //this.Close();
-
-
         }
     }
 }

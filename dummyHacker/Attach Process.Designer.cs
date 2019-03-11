@@ -53,6 +53,7 @@
             this.processid});
             this.ProcessListView.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ProcessListView.FullRowSelect = true;
+            this.ProcessListView.HideSelection = false;
             this.ProcessListView.Location = new System.Drawing.Point(9, 39);
             this.ProcessListView.MultiSelect = false;
             this.ProcessListView.Name = "ProcessListView";

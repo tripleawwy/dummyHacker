@@ -54,33 +54,132 @@ namespace dummyHacker
         public string[][] RPMtoString(int ColumnCount, int RowCount)
         {
 
-            string[][] RPMstring = new string[RowCount][];
+            string[][] jaggedRPMstringArray = new string[RowCount][];
 
             int size = ColumnCount * RowCount;
 
-
             byte[] buffer = new byte[size];
 
-
-            ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, (uint)size, out meow.notNecessary);
-
-
-            for (int i = 0; i < RowCount; i++)
+            if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, (uint)size, out meow.notNecessary)
+)
             {
-                RPMstring[i] = new string[ColumnCount];
-
-                for (int j = 0; j < ColumnCount; j++)
+                for (int i = 0; i < RowCount; i++)
                 {
-                    RPMstring[i][j] = buffer[i * ColumnCount + j].ToString("X2");
-                }
+                    jaggedRPMstringArray[i] = new string[ColumnCount];
 
+                    for (int j = 0; j < ColumnCount; j++)
+                    {
+                        jaggedRPMstringArray[i][j] = buffer[i * ColumnCount + j].ToString("X2");
+                    }
+
+                }
+            }
+            else
+            {
+                bool found = false;
+
+                foreach (List<RegionStructure> list in meow.regionLists)
+                {
+                    if (found)
+                    {
+                        break;
+                    }
+
+
+                    foreach (RegionStructure item in list)
+                    {
+                        if (
+                            helper > (int)item.RegionBeginning
+                            && helper < ((int)item.RegionBeginning + item.RegionSize)
+                            && helper + size > ((int)item.RegionBeginning + item.RegionSize)
+                            )
+                        {
+                            uint sizeHelper = (uint)((int)item.RegionBeginning + item.RegionSize - helper);
+                            found = true;
+
+                            ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, sizeHelper, out meow.notNecessary);
+                            for (int i = 0; i < RowCount; i++)
+                            {
+                                jaggedRPMstringArray[i] = new string[ColumnCount];
+
+                                for (int j = 0; j < ColumnCount; j++)
+                                {
+                                    if (sizeHelper > i * ColumnCount + j)
+                                    {
+                                        jaggedRPMstringArray[i][j] = buffer[i * ColumnCount + j].ToString("X2");
+                                    }
+                                    else
+                                    {
+                                        jaggedRPMstringArray[i][j] = "JJ";
+                                    }
+                                }
+                            }
+                            if (found)
+                            {
+                                break;
+                            }
+                        }
+
+
+
+                        else if (
+                            !found
+                            && helper < (int)item.RegionBeginning
+                            && helper + size > (int)item.RegionBeginning
+                            )
+                        {
+                            int helperHelper = 0;
+                            int sizeHelper = (int)item.RegionBeginning - helper;
+                            helperHelper = helper + sizeHelper;
+
+                            found = true;
+
+                            ReadProcessMemory(meow.targetHandle, new IntPtr(helperHelper), buffer, (uint)size, out meow.notNecessary);
+                            for (int i = 0; i < RowCount; i++)
+                            {
+                                jaggedRPMstringArray[i] = new string[ColumnCount];
+
+                                for (int j = 0; j < ColumnCount; j++)
+                                {
+                                    if (sizeHelper > i * ColumnCount + j)
+                                    {
+                                        jaggedRPMstringArray[i][j] = "jj";
+                                    }
+                                    else
+                                    {
+                                        jaggedRPMstringArray[i][j] = buffer[i * ColumnCount + j].ToString("X2");
+                                    }
+                                }
+                            }
+                            if (found)
+                            {
+                                break;
+                            }
+                        }
+
+
+
+                        else
+                        {
+                            for (int i = 0; i < RowCount; i++)
+                            {
+                                jaggedRPMstringArray[i] = new string[ColumnCount];
+
+                                for (int j = 0; j < ColumnCount; j++)
+                                {
+                                    jaggedRPMstringArray[i][j] = "??";
+                                }
+                            }
+                        }
+
+                    }
+                }
             }
 
 
 
-            return RPMstring;
 
-
+            return jaggedRPMstringArray;
         }
 
         public void AddRows(int rowCount)
@@ -89,7 +188,6 @@ namespace dummyHacker
             for (int i = 0; i < rowCount; i++)
             {
                 dataGridView2.Rows.Insert(i, arsch[i]);
-                //dataGridView2.Rows[i].HeaderCell.Value = (Helper(helper) + i * dataGridView2.ColumnCount).ToString("X8");
                 dataGridView2.Rows[i].HeaderCell.Value = (helper + i * dataGridView2.ColumnCount).ToString("X8");
                 dataGridView2.CurrentCell = dataGridView2.Rows[0].Cells[baseAddress % 0x10];
             }
@@ -103,9 +201,6 @@ namespace dummyHacker
             {
                 string[][] arsch = RPMtoString(dataGridView2.ColumnCount, rowCount);
                 dataGridView2.Rows[i].SetValues(arsch[i]);
-                //dataGridView2.Rows[i].HeaderCell.Value = (Helper(helper) + i * dataGridView2.ColumnCount).ToString("X8");
-                //dataGridView2.Rows[i].HeaderCell.Value = ((helper + i) * dataGridView2.ColumnCount).ToString("X8");
-                //dataGridView2.CurrentCell = dataGridView2.Rows[0].Cells[helper % 0x10];
             }
         }
 
@@ -114,10 +209,7 @@ namespace dummyHacker
         {
             for (int i = 0; i < rowCount; i++)
             {
-                //dataGridView2.Rows[i].SetValues(Penner());
-                dataGridView2.Rows[i].HeaderCell.Value = (AddressMinusLastPosition(helper) + i * dataGridView2.ColumnCount).ToString("X8");
-                //dataGridView2.Rows[i].HeaderCell.Value = ((helper + i) * dataGridView2.ColumnCount).ToString("X8");
-                //dataGridView2.CurrentCell = dataGridView2.Rows[0].Cells[helper % 0x10];
+                dataGridView2.Rows[i].HeaderCell.Value = (helper + i * dataGridView2.ColumnCount).ToString("X8");
             }
         }
 
@@ -218,11 +310,17 @@ namespace dummyHacker
 
         private void button1_Click(object sender, EventArgs e)
         {
-
+            checkBox1.Checked = false;
+            if (backgroundWorker1.IsBusy)
+            {
+                backgroundWorker1.CancelAsync();
+            }
+            DialogResult = DialogResult.OK;
         }
 
         private void backgroundWorker1_DoWork_1(object sender, DoWorkEventArgs e)
         {
+            backgroundWorker1.WorkerSupportsCancellation = true;
             while (checkBox1.Checked == true)
             {
                 dataGridView2.Invoke((Action)(() => ChangeContent(dataGridView2.RowCount)));
@@ -273,6 +371,11 @@ namespace dummyHacker
                     Thread.Sleep(5);
                 }
             }
+        }
+
+        private void MemoryViewForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

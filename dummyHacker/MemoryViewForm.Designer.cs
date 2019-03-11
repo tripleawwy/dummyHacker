@@ -32,6 +32,8 @@ namespace dummyHacker
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dataGridView2 = new System.Windows.Forms.DataGridView();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -61,6 +63,15 @@ namespace dummyHacker
             // 
             this.dataGridView2.AllowUserToAddRows = false;
             this.dataGridView2.AllowUserToDeleteRows = false;
+            this.dataGridView2.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Sunken;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridView2.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridView2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView2.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Column1,
@@ -79,12 +90,14 @@ namespace dummyHacker
             this.Column14,
             this.Column15,
             this.Column16});
-            this.dataGridView2.Location = new System.Drawing.Point(68, 91);
+            this.dataGridView2.Location = new System.Drawing.Point(25, 36);
             this.dataGridView2.Name = "dataGridView2";
             this.dataGridView2.ReadOnly = true;
             this.dataGridView2.RowHeadersWidth = 100;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            this.dataGridView2.RowsDefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridView2.ScrollBars = System.Windows.Forms.ScrollBars.None;
-            this.dataGridView2.Size = new System.Drawing.Size(708, 268);
+            this.dataGridView2.Size = new System.Drawing.Size(583, 240);
             this.dataGridView2.TabIndex = 4;
             this.dataGridView2.Click += new System.EventHandler(this.dataGridView2_Click);
             this.dataGridView2.MouseHover += new System.EventHandler(this.dataGridView2_MouseHover);
@@ -203,11 +216,11 @@ namespace dummyHacker
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(145, 27);
+            this.button1.Location = new System.Drawing.Point(288, 364);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 6;
-            this.button1.Text = "button1";
+            this.button1.Text = "Close";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -218,7 +231,7 @@ namespace dummyHacker
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(344, 42);
+            this.checkBox1.Location = new System.Drawing.Point(570, 364);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(80, 17);
             this.checkBox1.TabIndex = 7;
@@ -229,10 +242,10 @@ namespace dummyHacker
             // vScrollBar1
             // 
             this.vScrollBar1.LargeChange = 320;
-            this.vScrollBar1.Location = new System.Drawing.Point(736, 91);
+            this.vScrollBar1.Location = new System.Drawing.Point(608, 36);
             this.vScrollBar1.Maximum = 50000;
             this.vScrollBar1.Name = "vScrollBar1";
-            this.vScrollBar1.Size = new System.Drawing.Size(40, 268);
+            this.vScrollBar1.Size = new System.Drawing.Size(42, 240);
             this.vScrollBar1.TabIndex = 5;
             this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
             // 
@@ -244,13 +257,15 @@ namespace dummyHacker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(847, 450);
+            this.ClientSize = new System.Drawing.Size(679, 420);
+            this.ControlBox = false;
+            this.Controls.Add(this.vScrollBar1);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.button1);
-            this.Controls.Add(this.vScrollBar1);
             this.Controls.Add(this.dataGridView2);
             this.Name = "MemoryViewForm";
-            this.Text = "Form1";
+            this.Text = "MemoryView";
+            this.Load += new System.EventHandler(this.MemoryViewForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
