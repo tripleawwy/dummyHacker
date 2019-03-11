@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Threading;
+using System.Windows.Forms;
+using System.Runtime.InteropServices;
 using static DLLImports.Kernel32DLL;
 
 namespace dummyHacker
@@ -23,6 +19,9 @@ namespace dummyHacker
         int baseAddress;
         bool shallCounterWork;
         bool counterDirection;
+        MEMORY_BASIC_INFORMATION memInfo;
+
+
 
         public MemoryViewForm(MemoryEditorV2 editorV2, int selectedAddress)
         {
@@ -41,6 +40,7 @@ namespace dummyHacker
             AddRows(10);
             vScrollBar1.Maximum = 50_000;
             vScrollBar1.Value = vScrollBar1.Maximum / 2 - vScrollBar1.LargeChange / 2;
+            memInfo = new MEMORY_BASIC_INFORMATION();
 
         }
 
@@ -51,6 +51,152 @@ namespace dummyHacker
             return helper;
         }
 
+        public void GetMemoryInfo()
+        {
+            VirtualQueryEx(meow.targetHandle, new IntPtr(helper), out memInfo, (uint)Marshal.SizeOf(memInfo));
+        }
+
+
+        public string[][] Test(int ColumnCount, int RowCount)
+        {
+
+            string[][] testString = new string[RowCount][];
+            for (int i = 0; i < RowCount; i++)
+            {
+                testString[i] = new string[ColumnCount];
+            }
+            int size = ColumnCount * RowCount;
+            byte[] buffer = new byte[size];
+
+            //check whether memory chunk is readable at all
+            if (!ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, (uint)size, out meow.notNecessary))
+            {
+                GetMemoryInfo();
+
+                //if Address is inside of an accessible chunk but buffer exceeds the regionsize
+                // if (/*helper >= (int)memInfo.BaseAddress &&*/ helper + size > ((int)memInfo.BaseAddress + memInfo.RegionSize)  )
+                if (((int)memInfo.BaseAddress + memInfo.RegionSize) < (helper + size))
+                {
+                    uint sizeHelper = (uint)((int)memInfo.BaseAddress + memInfo.RegionSize - helper);
+
+                    //1. Anfang lesen
+                    if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, sizeHelper, out meow.notNecessary))
+                    {
+                        for (int i = 0; i < sizeHelper; i++)
+                        {
+                            testString[i / ColumnCount][i % ColumnCount] = buffer[i].ToString("X2");
+
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < sizeHelper; i++)
+                        {
+                            testString[i / ColumnCount][i % ColumnCount] = "JJ";
+
+                        }
+                    }
+
+
+                    //for (int i = 0; i < RowCount; i++)
+                    //{
+                    //    testString[i] = new string[ColumnCount];
+
+                    //    for (int j = 0; j < ColumnCount; j++)
+                    //    {
+                    //        if (i * ColumnCount + j < sizeHelper )
+                    //        {
+                    //            testString[i][j] = buffer[i * ColumnCount + j].ToString("X2");
+                    //        }
+                    //        else
+                    //        {
+                    //            testString[i][j] = "JJ";
+                    //        }
+                    //    }
+                    //}
+                    //}
+                    //if Address is outside of an accessible chunk but inside with corresponding buffer
+                    //else if (/*helper < (int)memInfo.BaseAddress + memInfo.RegionSize &&*/ helper + size > (int)memInfo.BaseAddress + memInfo.RegionSize)
+                    //{
+
+                    //sizeHelper = (int)memInfo.BaseAddress - helper; //hier ist der fehler
+                    // int helperHelper = helper + sizeHelper;
+
+
+                    //2. Ende lesen
+
+                    if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper + sizeHelper), buffer, (uint)size - sizeHelper, out meow.notNecessary))
+                    //                        if (ReadProcessMemory(meow.targetHandle, new IntPtr(helperHelper), buffer, (uint)size, out meow.notNecessary))
+                    {
+
+
+                        for (int i = (int)sizeHelper; i < size; i++)
+                        {
+                            testString[i / ColumnCount][i % ColumnCount] = buffer[i - sizeHelper].ToString("X2");
+
+                        }
+                    }
+                    else
+                    {
+                        for (int i = (int)sizeHelper; i < size; i++)
+                        {
+                            testString[i / ColumnCount][i % ColumnCount] = "jj";
+
+                        }
+                    }
+
+
+                    //for (int i = 0; i < RowCount; i++)
+                    //{
+                    //    testString[i] = new string[ColumnCount];
+
+                    //    for (int j = 0; j < ColumnCount; j++)
+                    //    {
+                    //        if (sizeHelper > i * ColumnCount + j)
+                    //        {
+                    //            testString[i][j] = "jj";
+                    //        }
+                    //        else
+                    //        {
+                    //            testString[i][j] = buffer[i * ColumnCount + j].ToString("X2");
+                    //        }
+                    //    }
+                    //}
+
+                }
+                //most likely protected area
+                else
+                {
+                    for (int i = 0; i < RowCount; i++)
+                    {
+                        testString[i] = new string[ColumnCount];
+
+                        for (int j = 0; j < ColumnCount; j++)
+                        {
+                            testString[i][j] = "??";
+                        }
+                    }
+                }
+
+            }
+            //if memory chunk is readable convert the buffer
+            else
+            {
+                for (int i = 0; i < RowCount; i++)
+                {
+                    testString[i] = new string[ColumnCount];
+
+                    for (int j = 0; j < ColumnCount; j++)
+                    {
+                        testString[i][j] = buffer[i * ColumnCount + j].ToString("X2");
+                    }
+
+                }
+            }
+            return testString;
+        }
+
+
         public string[][] RPMtoString(int ColumnCount, int RowCount)
         {
 
@@ -60,8 +206,7 @@ namespace dummyHacker
 
             byte[] buffer = new byte[size];
 
-            if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, (uint)size, out meow.notNecessary)
-)
+            if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, (uint)size, out meow.notNecessary))
             {
                 for (int i = 0; i < RowCount; i++)
                 {
@@ -184,7 +329,8 @@ namespace dummyHacker
 
         public void AddRows(int rowCount)
         {
-            string[][] arsch = RPMtoString(dataGridView2.ColumnCount, rowCount);
+            //string[][] arsch = RPMtoString(dataGridView2.ColumnCount, rowCount);
+            string[][] arsch = Test(dataGridView2.ColumnCount, rowCount);
             for (int i = 0; i < rowCount; i++)
             {
                 dataGridView2.Rows.Insert(i, arsch[i]);
@@ -199,7 +345,8 @@ namespace dummyHacker
         {
             for (int i = 0; i < rowCount; i++)
             {
-                string[][] arsch = RPMtoString(dataGridView2.ColumnCount, rowCount);
+                //string[][] arsch = RPMtoString(dataGridView2.ColumnCount, rowCount);
+                string[][] arsch = Test(dataGridView2.ColumnCount, rowCount);
                 dataGridView2.Rows[i].SetValues(arsch[i]);
             }
         }
@@ -296,7 +443,7 @@ namespace dummyHacker
                      || e.Type == ScrollEventType.LargeDecrement
                      )
             {
-                helper += (e.NewValue - e.OldValue) * 0x10;
+                helper += (e.NewValue - e.OldValue) * 0x010;
                 ChangeCellHeader(dataGridView2.RowCount);
                 e.NewValue = vScrollBar1.Maximum / 2;
             }

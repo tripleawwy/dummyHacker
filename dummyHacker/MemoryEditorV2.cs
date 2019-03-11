@@ -177,7 +177,7 @@ namespace dummyHacker
                 thread.Join();
             }
 
-            if (ScanHistory.Last().Count<=10_000)
+            if (ScanHistory.Last().Count <= 10_000)
             {
                 ScanHistory.Last().Sort();
             }
@@ -189,6 +189,8 @@ namespace dummyHacker
         private void ReadMemory(List<RegionStructure> list)
         {
             byte[] _value = Value;
+            //byte[] _allocAdr = new byte[4];
+            //byte[] _valueAdr = new byte[4];
             int _typesize = TypeSize;
 
             foreach (RegionStructure pair in list)
@@ -203,6 +205,13 @@ namespace dummyHacker
                         found = true;
                         for (int j = 0; j < _typesize; j++)
                         {
+                            //version ptr suche
+                            //if (memoryBuffer[i + j] < _allocAdr[j] || memoryBuffer[i + j] > _valueAdr[j])
+                            //{
+                            //    found = false;
+                            //}
+
+
                             if (memoryBuffer[i + j] != _value[j])
                             {
                                 found = false;
@@ -261,7 +270,7 @@ namespace dummyHacker
                     }
                 }
             }
-            if (ScanResult.Count()<=10_000)
+            if (ScanResult.Count() <= 10_000)
             {
                 ScanResult.Sort();
             }
