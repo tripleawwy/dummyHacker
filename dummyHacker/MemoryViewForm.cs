@@ -10,17 +10,12 @@ namespace dummyHacker
 {
     public partial class MemoryViewForm : Form
     {
-
-
-        private static Random random = new Random();
-
         MemoryEditorV2 meow;
         int helper;
         int baseAddress;
         bool shallCounterWork;
         bool counterDirection;
         MEMORY_BASIC_INFORMATION memInfo;
-
 
 
         public MemoryViewForm(MemoryEditorV2 editorV2, int selectedAddress)
@@ -41,8 +36,8 @@ namespace dummyHacker
             vScrollBar1.Maximum = 50_000;
             vScrollBar1.Value = vScrollBar1.Maximum / 2 - vScrollBar1.LargeChange / 2;
             memInfo = new MEMORY_BASIC_INFORMATION();
-
         }
+
 
         public int AddressMinusLastPosition(int CurrentAddress)
         {
@@ -57,15 +52,16 @@ namespace dummyHacker
         }
 
 
-        public string[][] Test(int ColumnCount, int RowCount)
+        //converts a memory chunk to an array of string arrays (10*16 : memoryView case)
+        public string[][] RPMasString(int columnCount, int rowCount)
         {
 
-            string[][] testString = new string[RowCount][];
-            for (int i = 0; i < RowCount; i++)
+            string[][] jaggedArray = new string[rowCount][];
+            for (int i = 0; i < rowCount; i++)
             {
-                testString[i] = new string[ColumnCount];
+                jaggedArray[i] = new string[columnCount];
             }
-            int size = ColumnCount * RowCount;
+            int size = columnCount * rowCount;
             byte[] buffer = new byte[size];
 
             //check whether memory chunk is readable at all
@@ -73,66 +69,34 @@ namespace dummyHacker
             {
                 GetMemoryInfo();
 
-                //if Address is inside of an accessible chunk but buffer exceeds the regionsize
-                // if (/*helper >= (int)memInfo.BaseAddress &&*/ helper + size > ((int)memInfo.BaseAddress + memInfo.RegionSize)  )
+                //if regionborder
                 if (((int)memInfo.BaseAddress + memInfo.RegionSize) < (helper + size))
                 {
                     uint sizeHelper = (uint)((int)memInfo.BaseAddress + memInfo.RegionSize - helper);
 
-                    //1. Anfang lesen
+                    //in the beginning fill not readable with "JJ"
                     if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, sizeHelper, out meow.notNecessary))
                     {
                         for (int i = 0; i < sizeHelper; i++)
                         {
-                            testString[i / ColumnCount][i % ColumnCount] = buffer[i].ToString("X2");
-
+                            jaggedArray[i / columnCount][i % columnCount] = buffer[i].ToString("X2");
                         }
                     }
                     else
                     {
                         for (int i = 0; i < sizeHelper; i++)
                         {
-                            testString[i / ColumnCount][i % ColumnCount] = "JJ";
+                            jaggedArray[i / columnCount][i % columnCount] = "JJ";
 
                         }
                     }
 
-
-                    //for (int i = 0; i < RowCount; i++)
-                    //{
-                    //    testString[i] = new string[ColumnCount];
-
-                    //    for (int j = 0; j < ColumnCount; j++)
-                    //    {
-                    //        if (i * ColumnCount + j < sizeHelper )
-                    //        {
-                    //            testString[i][j] = buffer[i * ColumnCount + j].ToString("X2");
-                    //        }
-                    //        else
-                    //        {
-                    //            testString[i][j] = "JJ";
-                    //        }
-                    //    }
-                    //}
-                    //}
-                    //if Address is outside of an accessible chunk but inside with corresponding buffer
-                    //else if (/*helper < (int)memInfo.BaseAddress + memInfo.RegionSize &&*/ helper + size > (int)memInfo.BaseAddress + memInfo.RegionSize)
-                    //{
-
-                    //sizeHelper = (int)memInfo.BaseAddress - helper; //hier ist der fehler
-                    // int helperHelper = helper + sizeHelper;
-
-
-                    //2. Ende lesen
-
+                    //in the end fill not readable with "jj"
                     if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper + sizeHelper), buffer, (uint)size - sizeHelper, out meow.notNecessary))
-                    //                        if (ReadProcessMemory(meow.targetHandle, new IntPtr(helperHelper), buffer, (uint)size, out meow.notNecessary))
                     {
-
-
                         for (int i = (int)sizeHelper; i < size; i++)
                         {
-                            testString[i / ColumnCount][i % ColumnCount] = buffer[i - sizeHelper].ToString("X2");
+                            jaggedArray[i / columnCount][i % columnCount] = buffer[i - sizeHelper].ToString("X2");
 
                         }
                     }
@@ -140,40 +104,21 @@ namespace dummyHacker
                     {
                         for (int i = (int)sizeHelper; i < size; i++)
                         {
-                            testString[i / ColumnCount][i % ColumnCount] = "jj";
+                            jaggedArray[i / columnCount][i % columnCount] = "jj";
 
                         }
                     }
-
-
-                    //for (int i = 0; i < RowCount; i++)
-                    //{
-                    //    testString[i] = new string[ColumnCount];
-
-                    //    for (int j = 0; j < ColumnCount; j++)
-                    //    {
-                    //        if (sizeHelper > i * ColumnCount + j)
-                    //        {
-                    //            testString[i][j] = "jj";
-                    //        }
-                    //        else
-                    //        {
-                    //            testString[i][j] = buffer[i * ColumnCount + j].ToString("X2");
-                    //        }
-                    //    }
-                    //}
-
                 }
-                //most likely protected area
+                //most likely protected areas are filled with "??"
                 else
                 {
-                    for (int i = 0; i < RowCount; i++)
+                    for (int i = 0; i < rowCount; i++)
                     {
-                        testString[i] = new string[ColumnCount];
+                        jaggedArray[i] = new string[columnCount];
 
-                        for (int j = 0; j < ColumnCount; j++)
+                        for (int j = 0; j < columnCount; j++)
                         {
-                            testString[i][j] = "??";
+                            jaggedArray[i][j] = "??";
                         }
                     }
                 }
@@ -182,155 +127,24 @@ namespace dummyHacker
             //if memory chunk is readable convert the buffer
             else
             {
-                for (int i = 0; i < RowCount; i++)
+                for (int i = 0; i < rowCount; i++)
                 {
-                    testString[i] = new string[ColumnCount];
+                    jaggedArray[i] = new string[columnCount];
 
-                    for (int j = 0; j < ColumnCount; j++)
+                    for (int j = 0; j < columnCount; j++)
                     {
-                        testString[i][j] = buffer[i * ColumnCount + j].ToString("X2");
+                        jaggedArray[i][j] = buffer[i * columnCount + j].ToString("X2");
                     }
 
                 }
             }
-            return testString;
+            return jaggedArray;
         }
-
-
-        public string[][] RPMtoString(int ColumnCount, int RowCount)
-        {
-
-            string[][] jaggedRPMstringArray = new string[RowCount][];
-
-            int size = ColumnCount * RowCount;
-
-            byte[] buffer = new byte[size];
-
-            if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, (uint)size, out meow.notNecessary))
-            {
-                for (int i = 0; i < RowCount; i++)
-                {
-                    jaggedRPMstringArray[i] = new string[ColumnCount];
-
-                    for (int j = 0; j < ColumnCount; j++)
-                    {
-                        jaggedRPMstringArray[i][j] = buffer[i * ColumnCount + j].ToString("X2");
-                    }
-
-                }
-            }
-            else
-            {
-                bool found = false;
-
-                foreach (List<RegionStructure> list in meow.regionLists)
-                {
-                    if (found)
-                    {
-                        break;
-                    }
-
-
-                    foreach (RegionStructure item in list)
-                    {
-                        if (
-                            helper > (int)item.RegionBeginning
-                            && helper < ((int)item.RegionBeginning + item.RegionSize)
-                            && helper + size > ((int)item.RegionBeginning + item.RegionSize)
-                            )
-                        {
-                            uint sizeHelper = (uint)((int)item.RegionBeginning + item.RegionSize - helper);
-                            found = true;
-
-                            ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, sizeHelper, out meow.notNecessary);
-                            for (int i = 0; i < RowCount; i++)
-                            {
-                                jaggedRPMstringArray[i] = new string[ColumnCount];
-
-                                for (int j = 0; j < ColumnCount; j++)
-                                {
-                                    if (sizeHelper > i * ColumnCount + j)
-                                    {
-                                        jaggedRPMstringArray[i][j] = buffer[i * ColumnCount + j].ToString("X2");
-                                    }
-                                    else
-                                    {
-                                        jaggedRPMstringArray[i][j] = "JJ";
-                                    }
-                                }
-                            }
-                            if (found)
-                            {
-                                break;
-                            }
-                        }
-
-
-
-                        else if (
-                            !found
-                            && helper < (int)item.RegionBeginning
-                            && helper + size > (int)item.RegionBeginning
-                            )
-                        {
-                            int helperHelper = 0;
-                            int sizeHelper = (int)item.RegionBeginning - helper;
-                            helperHelper = helper + sizeHelper;
-
-                            found = true;
-
-                            ReadProcessMemory(meow.targetHandle, new IntPtr(helperHelper), buffer, (uint)size, out meow.notNecessary);
-                            for (int i = 0; i < RowCount; i++)
-                            {
-                                jaggedRPMstringArray[i] = new string[ColumnCount];
-
-                                for (int j = 0; j < ColumnCount; j++)
-                                {
-                                    if (sizeHelper > i * ColumnCount + j)
-                                    {
-                                        jaggedRPMstringArray[i][j] = "jj";
-                                    }
-                                    else
-                                    {
-                                        jaggedRPMstringArray[i][j] = buffer[i * ColumnCount + j].ToString("X2");
-                                    }
-                                }
-                            }
-                            if (found)
-                            {
-                                break;
-                            }
-                        }
-
-
-
-                        else
-                        {
-                            for (int i = 0; i < RowCount; i++)
-                            {
-                                jaggedRPMstringArray[i] = new string[ColumnCount];
-
-                                for (int j = 0; j < ColumnCount; j++)
-                                {
-                                    jaggedRPMstringArray[i][j] = "??";
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-
-
-
-
-            return jaggedRPMstringArray;
-        }
+        
 
         public void AddRows(int rowCount)
         {
-            //string[][] arsch = RPMtoString(dataGridView2.ColumnCount, rowCount);
-            string[][] arsch = Test(dataGridView2.ColumnCount, rowCount);
+            string[][] arsch = RPMasString(dataGridView2.ColumnCount, rowCount);
             for (int i = 0; i < rowCount; i++)
             {
                 dataGridView2.Rows.Insert(i, arsch[i]);
@@ -345,8 +159,7 @@ namespace dummyHacker
         {
             for (int i = 0; i < rowCount; i++)
             {
-                //string[][] arsch = RPMtoString(dataGridView2.ColumnCount, rowCount);
-                string[][] arsch = Test(dataGridView2.ColumnCount, rowCount);
+                string[][] arsch = RPMasString(dataGridView2.ColumnCount, rowCount);
                 dataGridView2.Rows[i].SetValues(arsch[i]);
             }
         }
@@ -361,52 +174,7 @@ namespace dummyHacker
         }
 
 
-        public string[] Penner()
-        {
-            string[] penner = new string[dataGridView2.ColumnCount];
-
-
-            for (int i = 0; i < dataGridView2.ColumnCount; i++)
-            {
-                penner[i] = random.Next(256).ToString("X2");
-            }
-            return penner;
-        }
-
-
-
-        public string[,] Penner2(int rowCount)
-        {
-            string[,] rectangularArray = new string[rowCount, dataGridView2.ColumnCount];
-
-
-            for (int i = 0; i < rowCount; i++)
-            {
-                for (int j = 0; j < dataGridView2.ColumnCount; j++)
-                {
-                    rectangularArray[i, j] = random.Next(256).ToString("X2");
-                }
-            }
-            return rectangularArray;
-        }
-
-
-        public string[][] Penner3(int rowCount)
-        {
-            string[][] jaggedArray = new string[rowCount][];
-
-
-            for (int i = 0; i < jaggedArray.Length; i++)
-            {
-                jaggedArray[i] = new string[dataGridView2.ColumnCount];
-
-                for (int j = 0; j < jaggedArray[i].Length; j++)
-                {
-                    jaggedArray[i][j] = random.Next(256).ToString("X2");
-                }
-            }
-            return jaggedArray;
-        }
+        
 
 
 
@@ -428,8 +196,6 @@ namespace dummyHacker
                 counterDirection = false;
                 shallCounterWork = true;
                 Counter.RunWorkerAsync();
-
-
             }
             else if (
                      e.Type == ScrollEventType.LargeIncrement

@@ -58,6 +58,7 @@
     <Compile Include="Attach Process.Designer.cs">
       <DependentUpon>Attach Process.cs</DependentUpon>
     </Compile>
+    <Compile Include="Garbage.cs" />
     <Compile Include="MemoryViewForm.cs">
       <SubType>Form</SubType>
     </Compile>
