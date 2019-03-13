@@ -74,7 +74,7 @@ namespace dummyHacker
                 {
                     uint sizeHelper = (uint)((int)memInfo.BaseAddress + memInfo.RegionSize - helper);
 
-                    //in the beginning fill not readable with "JJ"
+                    //in the beginning fill unreadable chunks with "JJ"
                     if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper), buffer, sizeHelper, out meow.notNecessary))
                     {
                         for (int i = 0; i < sizeHelper; i++)
@@ -91,7 +91,7 @@ namespace dummyHacker
                         }
                     }
 
-                    //in the end fill not readable with "jj"
+                    //in the end fill unreadable chunks with "jj"
                     if (ReadProcessMemory(meow.targetHandle, new IntPtr(helper + sizeHelper), buffer, (uint)size - sizeHelper, out meow.notNecessary))
                     {
                         for (int i = (int)sizeHelper; i < size; i++)
