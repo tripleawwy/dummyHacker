@@ -208,5 +208,25 @@ namespace dummyHacker
             }
         }
 
+        private void DataGridView1_DoubleClick(object sender, EventArgs e)
+        {
+            meow.CurrentAddress = BitConverter.GetBytes(int.Parse(dataGridView1.CurrentRow.Cells[0].Value.ToString(), System.Globalization.NumberStyles.HexNumber));
+            meow.Start2();
+
+
+            source.DataSource = meow.Output;
+            dataGridView1.DataSource = source;
+
+
+            AddressFoundLabel.Text = meow.Output.Count().ToString();
+            NextScanButton.Enabled = true;
+            ResetButton.Enabled = true;
+            AddressFoundLabel.Visible = true;
+            FirstScanButton.Enabled = false;
+            InputTypeComboBox.Enabled = false;
+
+
+            Collector.RunWorkerAsync();
+        }
     }
 }

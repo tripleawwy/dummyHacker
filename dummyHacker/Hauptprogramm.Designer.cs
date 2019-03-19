@@ -106,6 +106,7 @@
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.Size = new System.Drawing.Size(405, 292);
             this.dataGridView1.TabIndex = 9;
+            this.dataGridView1.DoubleClick += new System.EventHandler(this.DataGridView1_DoubleClick);
             // 
             // schreiben
             // 
