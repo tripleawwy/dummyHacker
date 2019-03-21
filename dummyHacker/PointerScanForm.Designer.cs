@@ -54,6 +54,7 @@
             this.PointerScanView.Name = "PointerScanView";
             this.PointerScanView.Size = new System.Drawing.Size(643, 475);
             this.PointerScanView.TabIndex = 0;
+            this.PointerScanView.DoubleClick += new System.EventHandler(this.PointerScanView_DoubleClick);
             // 
             // BaseAddress
             // 

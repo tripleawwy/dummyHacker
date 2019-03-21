@@ -376,7 +376,7 @@ namespace dummyHacker
                         {
                             _offset = (uint)_referencedAddress - _currentValue;
                             done = false;
-                            uint[] scan = new uint[] { ((uint)(pair.RegionBeginning + i)), _processID, _offset };
+                            uint[] scan = new uint[] { (uint)(pair.RegionBeginning + i), _processID, _offset };
 
                             while (!done)
                             {
