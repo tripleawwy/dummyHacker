@@ -34,7 +34,7 @@ namespace dummyHacker
             Process process = Process.GetProcessById((int)scanLists.Last().ElementAt(0)[1]);
             List<string[]> datagrid = new List<string[]>();
             string _offset;
-            string moduleName = "";
+            string _moduleName = "";
 
 
 
@@ -51,14 +51,15 @@ namespace dummyHacker
                     {
                         if (structure[0] >= (uint)item.BaseAddress && structure[0] <= (uint)(item.BaseAddress + item.ModuleMemorySize))
                         {
-                            moduleName = item.ModuleName;
+                            _moduleName = item.ModuleName;
+                            break;
                         }
-                        else moduleName = "";
                     }
 
                     _offset = "+" + structure[2].ToString("X");
-                    string[] element = new string[] { structure[0].ToString("X8"), moduleName, _offset };
+                    string[] element = new string[] { structure[0].ToString("X8"), _moduleName, _offset };
                     datagrid.Add(element);
+                    _moduleName = "";
                 }
                 return datagrid;
             }
