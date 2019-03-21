@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,6 +29,41 @@ namespace dummyHacker
     public static class MemoryConverter
     {
 
+        public static List<string[]> CreateDataGridForPointer(List<List<uint[]>> scanLists)
+        {
+            Process process = Process.GetProcessById((int)scanLists.Last().ElementAt(0)[1]);
+            List<string[]> datagrid = new List<string[]>();
+            string _offset;
+            string moduleName = "";
+
+
+
+            if (scanLists.Last().Count() == 0)
+            {
+                datagrid.Add(new string[] { "no results found", "no results found", "no results found" });
+                return datagrid;
+            }
+            else
+            {
+                foreach (uint[] structure in scanLists.Last())
+                {
+                    foreach (ProcessModule item in process.Modules)
+                    {
+                        if (structure[0] >= (uint)item.BaseAddress && structure[0] <= (uint)(item.BaseAddress + item.ModuleMemorySize))
+                        {
+                            moduleName = item.ModuleName;
+                        }
+                        else moduleName = "";
+                    }
+
+                    _offset = "+" + structure[2].ToString("X");
+                    string[] element = new string[] { structure[0].ToString("X8"), moduleName, _offset };
+                    datagrid.Add(element);
+                }
+                return datagrid;
+            }
+        }
+
         public static List<DatagridSource> CreateDataGrid(List<List<ScanStructure>> scanLists, bool isString)
         {
             List<DatagridSource> datagrid = new List<DatagridSource>();
@@ -43,14 +79,14 @@ namespace dummyHacker
             }
             else
             {
-                _value = ByteArrayToString(scanLists, isString,0, 1);
+                _value = ByteArrayToString(scanLists, isString, 0, 1);
                 if (scanLists.Count() == 1)
                 {
                     _previousValue = _value;
                 }
                 else
                 {
-                    _previousValue = ByteArrayToString(scanLists, isString,0, 2);
+                    _previousValue = ByteArrayToString(scanLists, isString, 0, 2);
                 }
 
                 foreach (ScanStructure pair in scanLists.Last())
@@ -65,12 +101,12 @@ namespace dummyHacker
         public static List<DatagridSource> RefreshDatagrid(List<List<ScanStructure>> scanLists, bool isString)
         {
             List<DatagridSource> output = new List<DatagridSource>();
-            string _previousValue = ByteArrayToString(scanLists, isString,0, 2);
+            string _previousValue = ByteArrayToString(scanLists, isString, 0, 2);
 
             int i = 0;
             foreach (ScanStructure pair in scanLists.Last())
             {
-                output.Add(new DatagridSource(pair.Address.ToString("X8"), ByteArrayToString(scanLists, isString,i, 1), _previousValue));
+                output.Add(new DatagridSource(pair.Address.ToString("X8"), ByteArrayToString(scanLists, isString, i, 1), _previousValue));
                 i++;
             }
 
@@ -78,7 +114,7 @@ namespace dummyHacker
         }
 
 
-        private static string ByteArrayToString(List<List<ScanStructure>> scanLists, bool IsString,int controlVariable, int listNumber)
+        private static string ByteArrayToString(List<List<ScanStructure>> scanLists, bool IsString, int controlVariable, int listNumber)
         {
             string value = "";
 

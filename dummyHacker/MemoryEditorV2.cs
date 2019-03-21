@@ -36,6 +36,7 @@ namespace dummyHacker
         public int RegionSize { get; set; }
     }
 
+
     public class MemoryEditorV2
     {
         public MemoryEditorV2(int processId)
@@ -50,6 +51,7 @@ namespace dummyHacker
         public bool IsString { get; set; }
         public byte[] CurrentAddress { get; set; }
         public List<DatagridSource> Output;
+        public List<string[]> PointerOutput;
 
 
 
@@ -62,6 +64,7 @@ namespace dummyHacker
 
         public List<RegionStructure>[] regionLists;
         public List<List<ScanStructure>> ScanHistory;
+        public List<List<uint[]>> PointerHistory;
 
 
 
@@ -74,6 +77,7 @@ namespace dummyHacker
             notNecessary = IntPtr.Zero;
             regionLists = new List<RegionStructure>[Environment.ProcessorCount];
             ScanHistory = new List<List<ScanStructure>>();
+            PointerHistory = new List<List<uint[]>>();
 
             targetHandle = OpenProcess(QueryInformation | VirtualMemoryRead | VirtualMemoryWrite | VirtualMemoryOperation, false, ProcessId);
         }
@@ -271,7 +275,7 @@ namespace dummyHacker
                     }
                 }
             }
-            if (ScanResult.Count() <= 10_000)
+            if (ScanResult.Count() <= 20_000)
             {
                 ScanResult.Sort();
             }
@@ -320,7 +324,7 @@ namespace dummyHacker
         private void SearchForPointerInMultipleThreads()
         {
             List<Thread> threadList = new List<Thread>();
-            ScanHistory.Add(new List<ScanStructure>());
+            PointerHistory.Add(new List<uint[]>());
 
 
             foreach (List<RegionStructure> list in regionLists)
@@ -335,28 +339,23 @@ namespace dummyHacker
                 thread.Join();
             }
 
-            if (ScanHistory.Last().Count <= 10_000)
-            {
-                ScanHistory.Last().Sort();
-            }
-
-            Output = MemoryConverter.CreateDataGrid(ScanHistory, IsString);
+            PointerOutput = MemoryConverter.CreateDataGridForPointer(PointerHistory);
         }
 
         //reads memory for specific regions, compares them to a value and saves them into a history
         private void PointerScan(List<RegionStructure> list)
         {
-            byte[] _value = CurrentAddress;
-            byte[] _valueAdr = CurrentAddress;
+
             int _typesize = TypeSize;
+            uint _offset;
+            uint _currentValue;
+            uint _processID = (uint)ProcessId;
 
-
-            IntPtr _currentAddress = new IntPtr(BitConverter.ToInt32(CurrentAddress, 0));
+            IntPtr _referencedAddress = new IntPtr(BitConverter.ToInt32(CurrentAddress, 0));
 
             MEMORY_BASIC_INFORMATION memInfo = new MEMORY_BASIC_INFORMATION();
-            VirtualQueryEx(targetHandle,_currentAddress, out memInfo, (uint)Marshal.SizeOf(memInfo));
+            VirtualQueryEx(targetHandle, _referencedAddress, out memInfo, (uint)Marshal.SizeOf(memInfo));
 
-            byte[] _allocAdr = BitConverter.GetBytes((int)memInfo.BaseAddress);
 
             foreach (RegionStructure pair in list)
             {
@@ -368,28 +367,24 @@ namespace dummyHacker
                     for (int i = 0; i < memoryBuffer.Length - (_typesize - 1); i++)
                     {
                         found = true;
-                        for (int j = 0; j < _typesize; j++)
+                        _currentValue = (uint)(memoryBuffer[i + 3] << 24 | memoryBuffer[i + 2] << 16 | memoryBuffer[i + 1] << 8 | memoryBuffer[i]);
+                        if (_currentValue < (uint)memInfo.BaseAddress || _currentValue > (uint)_referencedAddress)
                         {
-                            //version ptr suche
-                            if (memoryBuffer[i + j] < _allocAdr[j] || memoryBuffer[i + j] > _valueAdr[j])
-                            {
-                                found = false;
-                            }
-
-
+                            found = false;
                         }
                         if (found)
                         {
+                            _offset = (uint)_referencedAddress - _currentValue;
                             done = false;
-                            ScanStructure scan = new ScanStructure(pair.RegionBeginning + i, _value);
+                            uint[] scan = new uint[] { ((uint)(pair.RegionBeginning + i)), _processID, _offset };
 
                             while (!done)
                             {
-                                Monitor.TryEnter(ScanHistory.Last(), ref done); //waits until no other thread is accessing the list
+                                Monitor.TryEnter(PointerHistory.Last(), ref done); //waits until no other thread is accessing the list
                                 if (done)
                                 {
-                                    ScanHistory.Last().Add(scan);
-                                    Monitor.Exit(ScanHistory.Last());
+                                    PointerHistory.Last().Add(scan);
+                                    Monitor.Exit(PointerHistory.Last());
                                 }
                             }
                         }
