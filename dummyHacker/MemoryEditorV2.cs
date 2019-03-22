@@ -401,7 +401,6 @@ namespace dummyHacker
                 k++;
             }
             return dump;
-            
         }
 
         private void MemoryDump2(List<RegionStructure> list)
