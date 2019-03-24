@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using static DLLImports.Kernel32DLL;
 using static DLLImports.Kernel32DLL.ProcessAccessFlags;
 
@@ -50,6 +51,12 @@ namespace dummyHacker
         public int ProcessId { get; set; }
         public bool IsString { get; set; }
         public byte[] CurrentAddress { get; set; }
+
+
+        public Process CurrentProcess;
+
+
+
         public List<DatagridSource> Output;
         public List<string[]> PointerOutput;
 
@@ -64,7 +71,8 @@ namespace dummyHacker
 
         public List<RegionStructure>[] regionLists;
         public List<List<ScanStructure>> ScanHistory;
-        public List<List<uint[]>> PointerHistory;
+        public List<List<PointerStructure>> PointerHistory;
+        public List<MemoryStructure> MemoryDump;
 
 
 
@@ -77,7 +85,9 @@ namespace dummyHacker
             notNecessary = IntPtr.Zero;
             regionLists = new List<RegionStructure>[Environment.ProcessorCount];
             ScanHistory = new List<List<ScanStructure>>();
-            PointerHistory = new List<List<uint[]>>();
+            PointerHistory = new List<List<PointerStructure>>();
+            MemoryDump = new List<MemoryStructure>();
+            CurrentProcess = Process.GetProcessById(ProcessId);
 
             targetHandle = OpenProcess(QueryInformation | VirtualMemoryRead | VirtualMemoryWrite | VirtualMemoryOperation, false, ProcessId);
         }
@@ -122,24 +132,12 @@ namespace dummyHacker
                     || memoryInfo.Protect == AllocationProtectEnum.PAGE_WRITECOMBINEPLUSREADWRITE
                     && (memoryInfo.Type == TypeEnum.MEM_IMAGE || memoryInfo.Type == TypeEnum.MEM_PRIVATE))
                 {
-
-                    //combines regions which are arranged consecutively in VRAM and adds them to a List
-                    if (originalRegionList.Count != 0 && (originalRegionList.Last().RegionBeginning + originalRegionList.Last().RegionSize == memoryInfo.BaseAddress))
-                    {
-                        region = new RegionStructure(originalRegionList.Last().RegionBeginning, originalRegionList.Last().RegionSize + (int)memoryInfo.RegionSize);
-                        originalRegionList.Add(region);
-                        originalRegionList.Remove(originalRegionList.ElementAt(originalRegionList.Count - 2));
-                    }
                     //adds regions to a List
-                    else
-                    {
-                        region = new RegionStructure(memoryInfo.BaseAddress, (int)memoryInfo.RegionSize);
-                        originalRegionList.Add(region);
-                    }
+                    region = new RegionStructure(memoryInfo.BaseAddress, (int)memoryInfo.RegionSize);
+                    originalRegionList.Add(region);
                 }
                 helpMinimumAddress = (uint)memoryInfo.BaseAddress + memoryInfo.RegionSize;
             }
-
             SplitList(originalRegionList);
 
         }
@@ -161,6 +159,8 @@ namespace dummyHacker
                 regionLists[i % threadCount].Add(list.ElementAt(i));
             }
         }
+
+
 
 
         //creates threads and assigns them to work a list
@@ -314,84 +314,169 @@ namespace dummyHacker
             ScanHistory = new List<List<ScanStructure>>();
             Output = new List<DatagridSource>();
             regionLists = new List<RegionStructure>[Environment.ProcessorCount];
+            PointerHistory = new List<List<PointerStructure>>();
         }
 
-        public void Start2()
+        public void PointerStart()
         {
-            SearchForPointerInMultipleThreads();
-        }
-
-        private void SearchForPointerInMultipleThreads()
-        {
-            List<Thread> threadList = new List<Thread>();
-            PointerHistory.Add(new List<uint[]>());
+            DumpMemorySynchronously();
+            PointerHistory.Add(new List<PointerStructure>());
 
 
-            foreach (List<RegionStructure> list in regionLists)
-            {
-                Thread arsch = new Thread(() => PointerScan(list));
-                arsch.Start();
-                threadList.Add(arsch);
-            }
+            IntPtr _currentAddress = new IntPtr(BitConverter.ToInt32(CurrentAddress, 0));
+            MEMORY_BASIC_INFORMATION memInfo = new MEMORY_BASIC_INFORMATION();
+            VirtualQueryEx(targetHandle, _currentAddress, out memInfo, (uint)Marshal.SizeOf(memInfo));
+            PointerStructure pointer = new PointerStructure((uint)_currentAddress, new RegionStructure(memInfo.BaseAddress, (int)memInfo.RegionSize));
+            PointerSearch(pointer);
 
-            foreach (Thread thread in threadList)
-            {
-                thread.Join();
-            }
+            int egal = 0;
 
             PointerOutput = MemoryConverter.CreateDataGridForPointer(PointerHistory);
         }
 
-        //reads memory for specific regions, compares them to a value and saves them into a history
-        private void PointerScan(List<RegionStructure> list)
+        public struct PointerStructure
         {
-
-            int _typesize = TypeSize;
-            uint _offset;
-            uint _currentValue;
-            uint _processID = (uint)ProcessId;
-
-            IntPtr _referencedAddress = new IntPtr(BitConverter.ToInt32(CurrentAddress, 0));
-
-            MEMORY_BASIC_INFORMATION memInfo = new MEMORY_BASIC_INFORMATION();
-            VirtualQueryEx(targetHandle, _referencedAddress, out memInfo, (uint)Marshal.SizeOf(memInfo));
-
-
-            foreach (RegionStructure pair in list)
+            public PointerStructure(uint address, RegionStructure regionStructure)
             {
-                bool found;
-                bool done;
-                byte[] memoryBuffer = new byte[pair.RegionSize];
-                if (ReadProcessMemory(targetHandle, pair.RegionBeginning, memoryBuffer, (uint)pair.RegionSize, out notNecessary))            //ToDo: das hier ist arsch langsam...
-                {
-                    for (int i = 0; i < memoryBuffer.Length - (_typesize - 1); i++)
-                    {
-                        found = true;
-                        _currentValue = (uint)(memoryBuffer[i + 3] << 24 | memoryBuffer[i + 2] << 16 | memoryBuffer[i + 1] << 8 | memoryBuffer[i]);
-                        if (_currentValue < (uint)memInfo.BaseAddress || _currentValue > (uint)_referencedAddress)
-                        {
-                            found = false;
-                        }
-                        if (found)
-                        {
-                            _offset = (uint)_referencedAddress - _currentValue;
-                            done = false;
-                            uint[] scan = new uint[] { (uint)(pair.RegionBeginning + i), _processID, _offset };
+                this.regionStructure = regionStructure;
+                offsets = new List<uint>();
+                addresses = new List<uint> { address };
+                moduleName = "stack";
+            }
 
-                            while (!done)
-                            {
-                                Monitor.TryEnter(PointerHistory.Last(), ref done); //waits until no other thread is accessing the list
-                                if (done)
-                                {
-                                    PointerHistory.Last().Add(scan);
-                                    Monitor.Exit(PointerHistory.Last());
-                                }
-                            }
-                        }
-                    }
+            public List<uint> addresses;
+            public List<uint> offsets;
+            public RegionStructure regionStructure;
+            public string moduleName;
+        }
+
+
+        public struct MemoryStructure
+        {
+            public MemoryStructure(IntPtr regionBeginning, int regionSize, byte[] memory)
+            {
+                this.regionBeginning = regionBeginning;
+                this.regionSize = regionSize;
+                this.memory = memory;
+            }
+
+            public IntPtr regionBeginning;
+            public int regionSize;
+            public byte[] memory;
+        }
+
+
+        private bool PointingFromModule(PointerStructure pointer)
+        {
+            for (int i = 0; i < CurrentProcess.Modules.Count; i++)
+            {
+                if (pointer.addresses.First() >= (uint)CurrentProcess.Modules[i].BaseAddress && pointer.addresses.First() <= (uint)CurrentProcess.Modules[i].BaseAddress + CurrentProcess.Modules[i].ModuleMemorySize)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private string ModuleName(PointerStructure pointer)
+        {
+            for (int i = 0; i < CurrentProcess.Modules.Count; i++)
+            {
+                if (pointer.addresses.First() >= (uint)CurrentProcess.Modules[i].BaseAddress && pointer.addresses.First() <= (uint)CurrentProcess.Modules[i].BaseAddress + CurrentProcess.Modules[i].ModuleMemorySize)
+                {
+                    return CurrentProcess.Modules[i].ModuleName;
+                }
+            }
+            return "arsch";
+        }
+
+
+        /// <summary>
+        /// searches for pointer
+        /// </summary>
+        /// <param name="pointer"></param>
+        private void PointerSearch(PointerStructure pointer)
+        {
+            foreach (MemoryStructure structure in MemoryDump)
+            {
+                for (int i = 0; i < structure.memory.Length - (TypeSize - 1); i++)
+                {
+                    uint _currentValue = (uint)(structure.memory[i + 3] << 24 | structure.memory[i + 2] << 16 | structure.memory[i + 1] << 8 | structure.memory[i]);
                 }
             }
         }
+
+        private bool PointingToRegion(uint currentValue, PointerStructure pointer)
+        {
+            if (currentValue < (uint)pointer.regionStructure.RegionBeginning || currentValue > pointer.addresses.First())
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+
+        private void DumpMemorySynchronously()
+        {
+            List<Task> memoryTasks = new List<Task>();
+
+            foreach (List<RegionStructure> item in regionLists)
+            {
+                Task region = Task.Run(() => DumpMemory(item));
+                memoryTasks.Add(region);
+            }
+
+            foreach (Task task in memoryTasks)
+            {
+                task.Wait();
+            }
+        }
+
+
+        private void DumpMemory(List<RegionStructure> list)
+        {
+            foreach (RegionStructure pair in list)
+            {
+                byte[] memoryBuffer = new byte[pair.RegionSize];
+                if (ReadProcessMemory(targetHandle, pair.RegionBeginning, memoryBuffer, (uint)pair.RegionSize, out notNecessary))
+                {
+                    WriteToList(memoryBuffer, pair);
+                }
+            }
+        }
+
+        private void WriteToList(byte[] memoryBuffer, RegionStructure regionStructure)
+        {
+            bool done = false;
+            while (!done)
+            {
+                Monitor.TryEnter(MemoryDump, ref done); //waits until no other thread is accessing the list
+                if (done)
+                {
+                    MemoryDump.Add(new MemoryStructure(regionStructure.RegionBeginning, regionStructure.RegionSize, memoryBuffer));
+                    Monitor.Exit(MemoryDump);
+                }
+            }
+        }
+
+        private MemoryStructure MainModuleDump()
+        {
+            byte[] memoryBuffer = new byte[CurrentProcess.MainModule.ModuleMemorySize];
+            if (ReadProcessMemory(targetHandle, CurrentProcess.MainModule.BaseAddress, memoryBuffer, (uint)CurrentProcess.MainModule.ModuleMemorySize, out notNecessary))
+            {
+                return new MemoryStructure(CurrentProcess.MainModule.BaseAddress, CurrentProcess.MainModule.ModuleMemorySize, memoryBuffer);
+            }
+            else
+            {
+                throw new Exception("unreadable stack");
+            }
+        }
+
+
+
     }
 
 

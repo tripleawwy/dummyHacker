@@ -38,7 +38,7 @@ namespace dummyHacker
 
         private void PointerScanForm_Shown(object sender, EventArgs e)
         {
-            pointer.Start2();
+            pointer.PointerStart();
             GC.Collect();
             for (int i = 0; i < pointer.PointerOutput.Count(); i++)
             {
@@ -49,7 +49,7 @@ namespace dummyHacker
         private void PointerScanView_DoubleClick(object sender, EventArgs e)
         {
             pointer.CurrentAddress = BitConverter.GetBytes(int.Parse(PointerScanView.CurrentRow.Cells[0].Value.ToString(), System.Globalization.NumberStyles.HexNumber));
-            pointer.Start2();
+            pointer.PointerStart();
             GC.Collect();
             for (int i = 0; i < pointer.PointerOutput.Count(); i++)
             {

@@ -29,14 +29,9 @@ namespace dummyHacker
     public static class MemoryConverter
     {
 
-        public static List<string[]> CreateDataGridForPointer(List<List<uint[]>> scanLists)
+        public static List<string[]> CreateDataGridForPointer(List<List<MemoryEditorV2.PointerStructure>> scanLists)
         {
-            Process process = Process.GetProcessById((int)scanLists.Last().ElementAt(0)[1]);
             List<string[]> datagrid = new List<string[]>();
-            string _offset;
-            string _moduleName = "";
-
-
 
             if (scanLists.Last().Count() == 0)
             {
@@ -45,21 +40,19 @@ namespace dummyHacker
             }
             else
             {
-                foreach (uint[] structure in scanLists.Last())
+                foreach (MemoryEditorV2.PointerStructure structure in scanLists.Last())
                 {
-                    foreach (ProcessModule item in process.Modules)
-                    {
-                        if (structure[0] >= (uint)item.BaseAddress && structure[0] <= (uint)(item.BaseAddress + item.ModuleMemorySize))
-                        {
-                            _moduleName = item.ModuleName;
-                            break;
-                        }
-                    }
+                    string[] element = new string[structure.offsets.Count() + 2];
 
-                    _offset = "+" + structure[2].ToString("X");
-                    string[] element = new string[] { structure[0].ToString("X8"), _moduleName, _offset };
+                    element[0] = structure.addresses.ElementAt(0).ToString("X8");
+                    element[1] = structure.moduleName;
+
+
+                    for (int i = 0; i < structure.offsets.Count(); i++)
+                    {
+                        element[i+2] = "+" + structure.offsets.ElementAt(i).ToString("X");
+                    }
                     datagrid.Add(element);
-                    _moduleName = "";
                 }
                 return datagrid;
             }
