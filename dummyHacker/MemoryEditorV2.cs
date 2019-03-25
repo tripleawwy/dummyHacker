@@ -33,8 +33,8 @@ namespace dummyHacker
             RegionBeginning = regionBeginning;
             RegionSize = regionSize;
         }
-        public IntPtr RegionBeginning { get; set; }
-        public int RegionSize { get; set; }
+        public IntPtr RegionBeginning;
+        public int RegionSize;
     }
 
 
@@ -395,20 +395,45 @@ namespace dummyHacker
         /// searches for pointer
         /// </summary>
         /// <param name="pointer"></param>
-        private void PointerSearch(PointerStructure pointer)
+        unsafe private void PointerSearch(PointerStructure pointer)
         {
+            uint _referencedAddress = pointer.addresses[0];
+            uint _regionBeginning = (uint)pointer.regionStructure.RegionBeginning;
+
             foreach (MemoryStructure structure in MemoryDump)
             {
-                for (int i = 0; i < structure.memory.Length - (TypeSize - 1); i++)
+
+
+                fixed (byte* memory = structure.memory)
                 {
-                    uint _currentValue = (uint)(structure.memory[i + 3] << 24 | structure.memory[i + 2] << 16 | structure.memory[i + 1] << 8 | structure.memory[i]);
+                    uint size = (uint)memory + (uint)structure.regionSize - sizeof(uint);
+
+
+
+                    for (uint ptr = (uint)memory; ptr < size; ptr++)
+                    {
+                        uint _currentValue = *(uint*)ptr;
+
+                        if (_currentValue >= _regionBeginning && _currentValue <= _referencedAddress)
+                        {
+                            PointerHistory.Last().Add(pointer);
+                        }
+                    }
                 }
+
+
+
+
+                //for (int i = 0; i < structure.memory.Length - (sizeof(int) - 1); i++)
+                //{
+                //    uint _currentValue = (uint)(structure.memory[i + 3] << 24 | structure.memory[i + 2] << 16 | structure.memory[i + 1] << 8 | structure.memory[i]);
+                //}
             }
         }
 
         private bool PointingToRegion(uint currentValue, PointerStructure pointer)
         {
-            if (currentValue < (uint)pointer.regionStructure.RegionBeginning || currentValue > pointer.addresses.First())
+            if (currentValue < (uint)pointer.regionStructure.RegionBeginning || currentValue > pointer.addresses[0])
             {
                 return false;
             }
