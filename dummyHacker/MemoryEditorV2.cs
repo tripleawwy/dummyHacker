@@ -327,7 +327,9 @@ namespace dummyHacker
             MEMORY_BASIC_INFORMATION memInfo = new MEMORY_BASIC_INFORMATION();
             VirtualQueryEx(targetHandle, _currentAddress, out memInfo, (uint)Marshal.SizeOf(memInfo));
             PointerStructure pointer = new PointerStructure((uint)_currentAddress, new RegionStructure(memInfo.BaseAddress, (int)memInfo.RegionSize));
-            PointerSearch(pointer);
+            ZweiundVierzig(pointer);
+            //MultiPointerSearch(pointer);
+
 
             int egal = 0;
 
@@ -391,11 +393,26 @@ namespace dummyHacker
         }
 
 
-        /// <summary>
-        /// searches for pointer
-        /// </summary>
-        /// <param name="pointer"></param>
-        unsafe private void PointerSearch(PointerStructure pointer)
+        public void MultiPointerSearch(PointerStructure pointer)
+        {
+            List<Task> tasklist = new List<Task>();
+
+
+            foreach (List<RegionStructure> list in regionLists)
+            {
+                Task task = Task.Run(() => PointerSearch(pointer, list));
+                tasklist.Add(task);
+            }
+
+            foreach (Task item in tasklist)
+            {
+                item.Wait();
+            }
+
+        }
+
+        public long size = 0;
+        unsafe private void ZweiundVierzig(PointerStructure pointer)
         {
             uint _referencedAddress = pointer.addresses[0];
             uint _regionBeginning = (uint)pointer.regionStructure.RegionBeginning;
@@ -403,33 +420,90 @@ namespace dummyHacker
             foreach (MemoryStructure structure in MemoryDump)
             {
 
+                size += structure.regionSize;
 
                 fixed (byte* memory = structure.memory)
                 {
-                    uint size = (uint)memory + (uint)structure.regionSize - sizeof(uint);
+                    uint _size = (uint)memory + (uint)structure.regionSize - sizeof(uint);
 
 
 
-                    for (uint ptr = (uint)memory; ptr < size; ptr++)
+                    for (uint ptr = (uint)memory; ptr < _size; ptr++)
                     {
                         uint _currentValue = *(uint*)ptr;
+
+                        //if (_currentValue != 0 || _currentValue <= 0x7fffffff)
+                        //{
+
+                        //}
+
 
                         if (_currentValue >= _regionBeginning && _currentValue <= _referencedAddress)
                         {
                             PointerHistory.Last().Add(pointer);
+                            //WriteToList(pointer);
                         }
                     }
                 }
+            
 
 
-
-
-                //for (int i = 0; i < structure.memory.Length - (sizeof(int) - 1); i++)
-                //{
-                //    uint _currentValue = (uint)(structure.memory[i + 3] << 24 | structure.memory[i + 2] << 16 | structure.memory[i + 1] << 8 | structure.memory[i]);
-                //}
             }
+            long hier = size;
         }
+
+        /// <summary>
+        /// searches for pointer
+        /// </summary>
+        /// <param name="pointer"></param>
+        unsafe private void PointerSearch(PointerStructure pointer, List<RegionStructure> list)
+        {
+            uint _referencedAddress = pointer.addresses[0];
+            uint _regionBeginning = (uint)pointer.regionStructure.RegionBeginning;
+
+            foreach (RegionStructure region in list)
+            {
+                byte[] buffer = new byte[region.RegionSize];
+                ReadProcessMemory(targetHandle, region.RegionBeginning, buffer, (uint)region.RegionSize, out notNecessary);
+
+
+                fixed (byte* memory = buffer)
+                {
+                    uint _size = (uint)memory + (uint)region.RegionSize - sizeof(uint);
+
+
+
+                    for (uint ptr = (uint)memory; ptr < _size; ptr++)
+                    {
+                        uint _currentValue = *(uint*)ptr;
+
+
+                        if (_currentValue!=0 || _currentValue <= 0x7fffffff)
+                        {
+
+                        }
+
+
+                        //if (_currentValue >= _regionBeginning && _currentValue <= _referencedAddress)
+                        //{
+                        //    WriteToList(pointer);
+                        //}
+                    }
+                }
+            }
+
+
+
+
+
+
+
+            //for (int i = 0; i < structure.memory.Length - (sizeof(int) - 1); i++)
+            //{
+            //    uint _currentValue = (uint)(structure.memory[i + 3] << 24 | structure.memory[i + 2] << 16 | structure.memory[i + 1] << 8 | structure.memory[i]);
+            //}
+        }
+
 
         private bool PointingToRegion(uint currentValue, PointerStructure pointer)
         {
@@ -469,6 +543,20 @@ namespace dummyHacker
                 if (ReadProcessMemory(targetHandle, pair.RegionBeginning, memoryBuffer, (uint)pair.RegionSize, out notNecessary))
                 {
                     WriteToList(memoryBuffer, pair);
+                }
+            }
+        }
+
+        private void WriteToList(PointerStructure pointer)
+        {
+            bool done = false;
+            while (!done)
+            {
+                Monitor.TryEnter(PointerHistory.Last(), ref done); //waits until no other thread is accessing the list
+                if (done)
+                {
+                    PointerHistory.Last().Add(pointer);
+                    Monitor.Exit(PointerHistory.Last());
                 }
             }
         }
